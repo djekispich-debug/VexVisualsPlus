@@ -19,10 +19,11 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Install Gradle
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gradle
+    - name: Setup Gradle 8.14.3
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: 8.14.3
+        gradle-wrapper-status-checks: false
 
     - name: Build mod
       run: gradle build --no-daemon --stacktrace
