@@ -1,0 +1,16 @@
+VexVisualsPlus на Windows 7
+=============================
+
+Почему не собирается Gradle:
+  - Gradle 8.14+ и 9.x требуют Windows 10 (1809+).
+  - Ошибка gradle-fileevents.dll на Win7 — ожидаема, это не баг мода.
+
+Почему не запустится Minecraft 1.21.11:
+  - Современный Minecraft Java Edition требует Windows 10+.
+
+Что можно делать на Win7:
+  - Редактировать код в IntelliJ.
+  - Собрать JAR через GitHub Actions (см. README.md).
+  - Играть с модом — только на ПК с Windows 10/11 (скопировать JAR в .minecraft/mods).
+
+Скачать JDK 21 для Win10 ПК: https://adoptium.net/
