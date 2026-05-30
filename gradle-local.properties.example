@@ -1,0 +1,4 @@
+# Только для своего ПК (Windows). Скопируй в gradle-local.properties
+# Не заливай gradle-local.properties на GitHub!
+org.gradle.java.home=D:\\Programs\\Java
+org.gradle.daemon=false
