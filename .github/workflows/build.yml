@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [ main, master ]
-  pull_request:
 
 jobs:
   build:
@@ -20,10 +19,10 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        gradle-version: 8.14.3
+    - name: Install Gradle
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gradle
 
     - name: Build mod
       run: gradle build --no-daemon --stacktrace
