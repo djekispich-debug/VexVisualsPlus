@@ -16,6 +16,7 @@ Fabric-мод для **Minecraft 1.21.11** (Java 21).
 ### Варианты на Windows 7
 
 1. **Сборка в облаке (бесплатно)** — залей проект на GitHub, запусти Actions → скачай JAR:
+   - Обязательно **закоммить** свежие `build.gradle` и `gradle.properties` (Loom **1.14.10**, не `1.7-SNAPSHOT`!)
    - Репозиторий → **Actions** → **Build VexVisualsPlus** → **Run workflow**
    - В конце скачай артефакт **VexVisualsPlus**
 
