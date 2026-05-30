@@ -19,10 +19,10 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Setup Gradle 8.5
+    - name: Setup Gradle 9.2
       uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-version: 8.5
+        gradle-version: 9.2
 
     - name: Build mod
       run: gradle build --no-daemon --stacktrace
