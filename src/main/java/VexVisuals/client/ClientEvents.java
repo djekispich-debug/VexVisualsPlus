@@ -6,10 +6,10 @@ import VexVisuals.module.ModuleRegistry;
 import VexVisuals.module.JumpCircle;
 import VexVisuals.module.ProjectileTrajectory;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+// import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;  // ТИМЧАСОВО ВИМКНЕНО
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
+// import net.minecraft.client.render.VertexConsumerProvider;  // не потрібно без WorldRenderEvents
+// import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
@@ -25,29 +25,13 @@ public final class ClientEvents {
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(ClientEvents::onTick);
         
-        // Переводимо 3D рендеринг функцій на стандарти Yarn/Fabric
+        // ТИМЧАСОВО ВИМКНЕНО — WorldRenderEvents недоступний у цій версії Fabric API
+        // TODO: знайти альтернативний спосіб рендерингу ProjectileTrajectory та JumpCircle
+        /*
         WorldRenderEvents.LAST.register(context -> {
-            MinecraftClient mc = MinecraftClient.getInstance();
-            if (mc.world == null || mc.getBufferBuilders() == null) {
-                return;
-            }
-            
-            // У Yarn замість PoseStack використовується MatrixStack
-            MatrixStack matrices = context.matrixStack();
-            
-            // Отримуємо Immediate провайдер буферів рендеру
-            VertexConsumerProvider.Immediate providers = mc.getBufferBuilders().getEntityVertexConsumers();
-            
-            // Розраховуємо partial ticks (дельту часу) відповідно до Yarn API 1.21
-            float pt = context.tickCounter().getTickDelta(true);
-            
-            // Викликаємо оновлені Yarn-методи відображення функцій
-            ProjectileTrajectory.render(matrices, providers, pt);
-            JumpCircle.render(matrices, providers, pt);
-            
-            // Завершуємо малювання поточної черги буферів (endBatch)
-            providers.draw();
+            // ... код ...
         });
+        */
     }
 
     private static void onTick(MinecraftClient mc) {
