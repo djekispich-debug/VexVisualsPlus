@@ -1,7 +1,7 @@
 package VexVisuals.modules;
 
 import VexVisuals.modules.impl.render.*; // Импорт реализованных модулей
-import VexVisuals.utils.ColorManager;
+import VexVisuals.util.ColorManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
