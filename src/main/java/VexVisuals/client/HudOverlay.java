@@ -9,7 +9,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.text.Text;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -28,7 +27,6 @@ public final class HudOverlay {
 
     private static void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        // Перевірка, чи HUD прихований – використовуємо hudHidden (для 1.21+)
         if (mc.options.hudHidden || mc.player == null) {
             return;
         }
@@ -40,8 +38,8 @@ public final class HudOverlay {
             String line = title + "  |  " + nick + "  |  " + time;
             int w = mc.textRenderer.getWidth(line) + 10;
             context.fill(4, y, 4 + w, y + 14, 0x90000000);
-            // Змінено: String -> Text.literal()
-            context.drawText(mc.textRenderer, Text.literal(line), 8, y + 3, ColorManager.chroma(System.currentTimeMillis(), 1), true);
+            // Використовуємо textRenderer.draw замість context.drawText
+            mc.textRenderer.draw(line, 8, y + 3, ColorManager.chroma(System.currentTimeMillis(), 1), true);
             y += 16;
         }
         if (isOn(ModuleType.ARRAY_LIST)) {
@@ -51,9 +49,9 @@ public final class HudOverlay {
                     .toList();
             int row = y;
             for (Module module : enabled) {
-                // Змінено: String -> Text.literal()
-                context.drawText(mc.textRenderer, Text.literal(module.getName()), mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(module.getName()) - 6,
-                        row, ColorManager.chroma(System.currentTimeMillis(), row * 3), true);
+                String name = module.getName();
+                int x = mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(name) - 6;
+                mc.textRenderer.draw(name, x, row, ColorManager.chroma(System.currentTimeMillis(), row * 3), true);
                 row += 10;
             }
         }
