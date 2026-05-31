@@ -15,18 +15,16 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    
-    mappings(loom.officialMojangMappings()) {
-        it.dependencyJavadocEnabled = false
-    }
-    
+
+    mappings loom.officialMojangMappings()
+
     modImplementation "net.fabricmc:fabric-loader:${loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 }
 
-
 processResources {
     inputs.property "version", project.version
+
     filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
