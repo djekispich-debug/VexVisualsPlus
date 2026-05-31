@@ -20,19 +20,16 @@ jobs:
           java-version: '21'
           distribution: temurin
 
-      # Примусово вимикаємо відновлення пошкодженого кешу 9.4.1
-      - name: Setup Gradle 8.10 (Clean Mode)
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10'
-          cache-disabled: true # Цей рядок заблокує завантаження старих файлів
 
       - name: Prepare execution permissions
         run: chmod +x gradlew
 
-      # Додаємо прапорець --refresh-dependencies для чистого завантаження під Loom 1.7.4
       - name: Build mod
-        run: ./gradlew clean genSources build --no-daemon --stacktrace --refresh-dependencies
+        run: ./gradlew clean genSources build --no-daemon --stacktrace
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
