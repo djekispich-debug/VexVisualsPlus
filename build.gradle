@@ -9,25 +9,6 @@ base {
     archivesName = project.archives_base_name
 }
 
-// ПРАВИЛЬНИЙ СИНТАКСИС ДЛЯ LOOM 1.7.4:
-loom {
-    // Вимикає генерацію та перевірку javadoc для сторонніх модів із середовища
-    it.getLifecycle().afterEvaluate {
-        it.dependencies.each { dep ->
-            if (dep.name.contains("fabric-api")) {
-                dep.transitive = true
-            }
-        }
-    }
-}
-
-// Додатково кажемо Gradle ігнорувати завантаження Javadoc-класів з мавенів
-gradle.projectsEvaluated {
-    tasks.withType(GenerateModuleMetadata) {
-        enabled = false
-    }
-}
-
 repositories {
     mavenCentral()
 }
