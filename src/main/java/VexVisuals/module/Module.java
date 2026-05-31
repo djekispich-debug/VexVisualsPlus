@@ -2,6 +2,9 @@ package VexVisuals.module;
 
 import org.lwjgl.glfw.GLFW;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
