@@ -1,6 +1,5 @@
 plugins {
-    // Вказуємо версію прямо, оскільки Plugins DSL не вміє читати змінні рядків на етапі старту
-    id 'fabric-loom' version '1.8.11'
+    id 'fabric-loom' version '1.11.8' // Повертаємо сучасний Loom під Minecraft 1.21.11
 }
 
 version = project.mod_version
@@ -8,6 +7,11 @@ group = project.maven_group
 
 base {
     archivesName = project.archives_base_name
+}
+
+// ОФІЦІЙНЕ ВИМКНЕННЯ ВАЛІДАЦІЇ ДЛЯ СУЧАСНОГО LOOM 1.11+:
+loom {
+    it.getDependencyJavadocEnabled().set(false)
 }
 
 repositories {
