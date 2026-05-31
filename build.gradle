@@ -9,9 +9,16 @@ base {
     archivesName = project.archives_base_name
 }
 
-// ЦЕЙ БЛОК ОФІЦІЙНО ВИМИКАЄ ПЕРЕВІРКУ JAVADOC У LOOM 1.11+:
+// ПРАВИЛЬНИЙ СИНТАКСИС ДЛЯ ВИМКНЕННЯ JAVADOC У LOOM 1.11+:
 loom {
-    dependencyJavadocEnabled.set(false)
+    decompilers {
+        vineflower {
+            options.set([
+                'hdc': '0', // Вимикає генерацію коментарів javadoc декомпілятором
+                'dgs': '1'
+            ])
+        }
+    }
 }
 
 repositories {
