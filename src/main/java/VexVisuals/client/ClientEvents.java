@@ -8,7 +8,7 @@ import VexVisuals.render.ProjectileTrajectory;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
-net.minecraft.client.MinecraftClient
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.lwjgl.glfw.GLFW;
 
