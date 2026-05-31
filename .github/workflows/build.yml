@@ -1,38 +1,38 @@
 name: Build VexVisualsPlus
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ main, master ]
-  pull_request:
+workflow_dispatch:
+push:
+branches: [ main, master ]
+pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+build:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+```
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
+  - name: Set up JDK 21
+    uses: actions/setup-java@v4
+    with:
+      java-version: '21'
+      distribution: 'temurin'
 
-      # Інсталюємо та фіксуємо чисту версію Gradle 8.10 в системі
-      - name: Setup Gradle 8.11
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.11'
-          cache-disabled: true # Повністю блокуємо збереження/читання кешу для чистого запуску
+  - name: Make gradlew executable
+    run: chmod +x gradlew
 
-      # Запускаємо збірку НАПРЯМУ через системний gradle (без ./gradlew)
-      - name: Build mod with system Gradle
-        run: gradle clean genSources build --no-daemon --stacktrace --refresh-dependencies
+  - name: Verify Gradle version
+    run: ./gradlew --version
 
-      - name: Upload JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: VexVisualsPlus
-          path: build/libs/*.jar
+  - name: Build mod
+    run: ./gradlew clean genSources build --no-daemon --stacktrace --refresh-dependencies
+
+  - name: Upload JAR
+    uses: actions/upload-artifact@v4
+    with:
+      name: VexVisualsPlus
+      path: build/libs/*.jar
+```
