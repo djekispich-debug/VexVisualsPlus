@@ -20,13 +20,20 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # Екшен сам надасть чистий Gradle 8.10 та виконає збірку без використання локального ворпера
-      - name: Run Gradle Build
+      # 1. Налаштовуємо чисте середовище Gradle 8.10
+      - name: Setup Gradle 8.10
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10'
-          cache-disabled: true # Залишаємо вимкненим, щоб уникнути конфліктів кешу
-          arguments: clean genSources build --no-daemon --stacktrace --refresh-dependencies
+          cache-disabled: true # Залишаємо вимкненим для повної ізоляції
+
+      # 2. Крок-порятунок: Генеруємо відсутній файл gradle-wrapper.jar прямо у хмарі
+      - name: Regenerate missing Gradle Wrapper
+        run: gradle wrapper --gradle-version=8.10 --distribution-type=bin
+
+      # 3. Запускаємо збірку моду стандартним та безпечним способом
+      - name: Build mod
+        run: ./gradlew clean genSources build --no-daemon --stacktrace --refresh-dependencies
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
