@@ -3,13 +3,13 @@ package VexVisuals.client;
 import VexVisuals.gui.ClickGuiScreen;
 import VexVisuals.module.Module;
 import VexVisuals.module.ModuleRegistry;
-import VexVisuals.render.JumpCircle;
-import VexVisuals.render.ProjectileTrajectory;
-import com.mojang.blaze3d.vertex.PoseStack;
+import VexVisuals.module.JumpCircle;
+import VexVisuals.module.ProjectileTrajectory;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
@@ -24,13 +24,29 @@ public final class ClientEvents {
 
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(ClientEvents::onTick);
+        
+        // Переводимо 3D рендеринг функцій на стандарти Yarn/Fabric
         WorldRenderEvents.LAST.register(context -> {
-            PoseStack pose = context.matrixStack();
-            MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-            float pt = context.tickCounter().getGameTimeDeltaPartialTick(true);
-            ProjectileTrajectory.render(pose, buffers, pt);
-            JumpCircle.render(pose, buffers, pt);
-            buffers.endBatch();
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc.world == null || mc.getBufferBuilders() == null) {
+                return;
+            }
+            
+            // У Yarn замість PoseStack використовується MatrixStack
+            MatrixStack matrices = context.matrixStack();
+            
+            // Отримуємо Immediate провайдер буферів рендеру
+            VertexConsumerProvider.Immediate providers = mc.getBufferBuilders().getEntityVertexConsumers();
+            
+            // Розраховуємо partial ticks (дельту часу) відповідно до Yarn API 1.21
+            float pt = context.tickCounter().getTickDelta(true);
+            
+            // Викликаємо оновлені Yarn-методи відображення функцій
+            ProjectileTrajectory.render(matrices, providers, pt);
+            JumpCircle.render(matrices, providers, pt);
+            
+            // Завершуємо малювання поточної черги буферів (endBatch)
+            providers.draw();
         });
     }
 
@@ -38,11 +54,13 @@ public final class ClientEvents {
         if (mc.player == null) {
             return;
         }
+        
+        // Викликаємо оновлений тік стрибкових кіл у папці module
         JumpCircle.onTick(mc.player);
 
-        long window = mc.getWindow().getWindow();
+        long window = mc.getWindow().getHandle();
         boolean shiftDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
-        if (shiftDown && !shiftWasDown && mc.screen == null) {
+        if (shiftDown && !shiftWasDown && mc.currentScreen == null) {
             mc.setScreen(new ClickGuiScreen());
         }
         shiftWasDown = shiftDown;
