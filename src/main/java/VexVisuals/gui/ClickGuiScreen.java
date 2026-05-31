@@ -69,17 +69,19 @@ public class ClickGuiScreen extends Screen {
         RenderUtil.fillRounded(context, sx, sy, scaledW, scaledH, 10, ThemeManager.panel());
         context.fill(sx, sy, sx + scaledW, sy + 2, ThemeManager.accent());
 
-        // Временно отключаем весь текст, чтобы избежать краша
-        // renderHeader(...);
-        // renderCategoryBar(...);
-        // renderModuleList(...);
-        // renderModuleDetails(...);
+        renderHeader(context, sx, sy, scaledW);
+        renderCategoryBar(context, sx, sy + 42, scaledW, mouseX, mouseY);
+        int contentY = sy + 68;
+        int contentH = scaledH - 76;
+        int colW = scaledW / 3;
+        renderModuleList(context, sx + 8, contentY, colW - 12, contentH, mouseX, mouseY);
+        renderModuleDetails(context, sx + colW + 8, contentY, colW * 2 - 16, contentH, mouseX, mouseY);
 
         if (bindingModule != null) {
             String hint = "Бинд: " + bindingModule.getName() + " — клавиша / колёсико / ESC = сброс";
-            int tw = this.textRenderer.getWidth(hint);
+            int tw = mc.textRenderer.getWidth(hint);
             context.fill(this.width / 2 - tw / 2 - 8, this.height - 36, this.width / 2 + tw / 2 + 8, this.height - 18, ThemeManager.background());
-            // context.drawText(this.textRenderer, Text.literal(hint), this.width / 2 - tw / 2, this.height - 32, ThemeManager.accent(), true);
+            mc.textRenderer.draw(hint, (float)(this.width / 2 - tw / 2), (float)(this.height - 32), ThemeManager.accent(), true);
         }
         super.render(context, mouseX, mouseY, partialTick);
     }
@@ -88,7 +90,122 @@ public class ClickGuiScreen extends Screen {
         context.fill(0, 0, this.width, this.height, ThemeManager.background());
     }
 
-    // Обработка кликов, скролла, клавиш – всё работает
+    private void renderHeader(DrawContext context, int x, int y, int w) {
+        int barH = 36;
+        RenderUtil.horizontalGradient(context, x + 6, y + 6, w - 12, barH, ThemeManager.headerGradientTop(), ThemeManager.headerGradientBottom());
+
+        String title = CLIENT_TITLE;
+        String nickname = mc.player != null ? mc.player.getName().getString() : "Оффлайн";
+        String time = LocalTime.now().format(CLOCK);
+
+        int titleColor = ColorManager.chroma(System.currentTimeMillis(), 0);
+        mc.textRenderer.draw(title, x + 14, y + 16, titleColor, true);
+        int nickW = mc.textRenderer.getWidth(nickname);
+        mc.textRenderer.draw(nickname, x + (w - nickW) / 2f, y + 16, ThemeManager.text(), true);
+        int timeW = mc.textRenderer.getWidth(time);
+        mc.textRenderer.draw(time, x + w - timeW - 14f, y + 16, ThemeManager.accent(), true);
+
+        String sub = "v1.21.11  |  Тема: " + ThemeManager.getCurrent().name();
+        mc.textRenderer.draw(sub, x + 14, y + 26, ThemeManager.textMuted(), true);
+    }
+
+    private void renderCategoryBar(DrawContext context, int x, int y, int w, int mouseX, int mouseY) {
+        Category[] cats = Category.values();
+        int tabW = (w - 16) / cats.length;
+        for (int i = 0; i < cats.length; i++) {
+            Category cat = cats[i];
+            int tx = x + 8 + i * tabW;
+            boolean sel = cat == selectedCategory;
+            boolean hover = mouseX >= tx && mouseX < tx + tabW - 4 && mouseY >= y && mouseY < y + 20;
+            int bg = sel ? ThemeManager.accent() : (hover ? ThemeManager.border() : 0x00000000);
+            if (bg != 0) {
+                context.fill(tx, y, tx + tabW - 4, y + 20, ColorManager.withAlpha(bg, sel ? 0.35f : 0.2f));
+            }
+            String label = cat.getDisplayName();
+            int lw = mc.textRenderer.getWidth(label);
+            mc.textRenderer.draw(label, tx + (tabW - 4 - lw) / 2f, y + 6, sel ? ThemeManager.text() : ThemeManager.textMuted(), true);
+        }
+    }
+
+    private void renderModuleList(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY) {
+        List<VexVisuals.module.Module> modules = ModuleRegistry.byCategory(selectedCategory);
+        mc.textRenderer.draw("Модули (" + modules.size() + ")", x, y, ThemeManager.textMuted(), true);
+        int rowY = y + 14 - panelScroll;
+        for (VexVisuals.module.Module module : modules) {
+            if (rowY > y + h) break;
+            if (rowY + 18 >= y) {
+                boolean hover = mouseX >= x && mouseX < x + w && mouseY >= rowY && mouseY < rowY + 16;
+                boolean sel = module == selectedModule;
+                if (hover || sel) {
+                    context.fill(x, rowY, x + w, rowY + 16, ColorManager.withAlpha(ThemeManager.accent(), sel ? 0.35f : 0.15f));
+                }
+                int nameColor = module.isEnabled() ? ThemeManager.accent() : ThemeManager.text();
+                mc.textRenderer.draw(module.getName(), x + 4, rowY + 4, nameColor, true);
+                String bind = keyName(module.getKeyBind());
+                int bw = mc.textRenderer.getWidth(bind);
+                mc.textRenderer.draw(bind, x + w - bw - 4f, rowY + 4, ThemeManager.textMuted(), true);
+            }
+            rowY += 18;
+        }
+    }
+
+    private void renderModuleDetails(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY) {
+        if (selectedModule == null) {
+            mc.textRenderer.draw("Выберите модуль слева", x, y + 20, ThemeManager.textMuted(), true);
+            return;
+        }
+        mc.textRenderer.draw(selectedModule.getName(), x, y, ThemeManager.accent(), true);
+        mc.textRenderer.draw(selectedModule.getDescription(), x, y + 12, ThemeManager.textMuted(), true);
+        String status = selectedModule.isEnabled() ? "Вкл" : "Выкл";
+        mc.textRenderer.draw("Статус: " + status + "  |  Бинд: " + keyName(selectedModule.getKeyBind()), x, y + 24, ThemeManager.text(), true);
+
+        int sy = y + 40 - settingsScroll;
+        for (Setting<?> setting : selectedModule.getSettings()) {
+            if (sy > y + h) break;
+            renderSetting(context, x, sy, w, setting, mouseX, mouseY);
+            sy += settingHeight(setting);
+        }
+    }
+
+    private int settingHeight(Setting<?> setting) {
+        return switch (setting.getType()) {
+            case NUMBER -> 28;
+            case COLOR -> 22;
+            default -> 18;
+        };
+    }
+
+    private void renderSetting(DrawContext context, int x, int sy, int w, Setting<?> setting, int mouseX, int mouseY) {
+        mc.textRenderer.draw(setting.getName(), x, sy + 2, ThemeManager.text(), true);
+        switch (setting.getType()) {
+            case BOOLEAN -> {
+                BooleanSetting bs = (BooleanSetting) setting;
+                String v = bs.get() ? "✓" : "✗";
+                mc.textRenderer.draw(v, x + w - 12, sy + 2, bs.get() ? ThemeManager.accent() : ThemeManager.textMuted(), true);
+            }
+            case NUMBER -> {
+                NumberSetting ns = (NumberSetting) setting;
+                int barX = x;
+                int barY = sy + 14;
+                int barW = w - 8;
+                context.fill(barX, barY, barX + barW, barY + 4, ThemeManager.border());
+                double t = (ns.get() - ns.getMin()) / (ns.getMax() - ns.getMin());
+                int fill = (int) (barW * t);
+                context.fill(barX, barY, barX + fill, barY + 4, ThemeManager.accent());
+                String val = String.format("%.2f", ns.get());
+                mc.textRenderer.draw(val, x + w - mc.textRenderer.getWidth(val), sy + 2, ThemeManager.textMuted(), true);
+            }
+            case MODE -> {
+                ModeSetting ms = (ModeSetting) setting;
+                mc.textRenderer.draw(ms.get(), x + w - mc.textRenderer.getWidth(ms.get()) - 4, sy + 2, ThemeManager.accent(), true);
+            }
+            case COLOR -> {
+                ColorSetting cs = (ColorSetting) setting;
+                context.fill(x + w - 24, sy, x + w - 4, sy + 14, cs.get() | 0xFF000000);
+            }
+        }
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (bindingModule != null) {
@@ -96,9 +213,15 @@ public class ClickGuiScreen extends Screen {
             bindingModule = null;
             return true;
         }
-        if (handleCategoryClick((int) mouseX, (int) mouseY, button)) return true;
-        if (handleModuleListClick((int) mouseX, (int) mouseY, button)) return true;
-        if (handleSettingsClick((int) mouseX, (int) mouseY, button)) return true;
+        if (handleCategoryClick((int) mouseX, (int) mouseY, button)) {
+            return true;
+        }
+        if (handleModuleListClick((int) mouseX, (int) mouseY, button)) {
+            return true;
+        }
+        if (handleSettingsClick((int) mouseX, (int) mouseY, button)) {
+            return true;
+        }
         if (button == 0 && mouseX > width - 120 && mouseY < 42) {
             ThemeManager.cycleTheme();
             return true;
@@ -159,8 +282,11 @@ public class ClickGuiScreen extends Screen {
         for (Setting<?> setting : selectedModule.getSettings()) {
             int h = settingHeight(setting);
             if (mouseY >= y && mouseY < y + h) {
-                if (setting instanceof BooleanSetting bs) bs.set(!bs.get());
-                else if (setting instanceof ModeSetting ms) ms.cycle();
+                if (setting instanceof BooleanSetting bs) {
+                    bs.set(!bs.get());
+                } else if (setting instanceof ModeSetting ms) {
+                    ms.cycle();
+                }
                 return true;
             }
             y += h;
@@ -170,16 +296,23 @@ public class ClickGuiScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (mouseX < width / 2) panelScroll = Math.max(0, panelScroll - (int) scrollY * 12);
-        else settingsScroll = Math.max(0, settingsScroll - (int) scrollY * 12);
+        if (mouseX < width / 2) {
+            panelScroll = Math.max(0, panelScroll - (int) scrollY * 12);
+        } else {
+            settingsScroll = Math.max(0, settingsScroll - (int) scrollY * 12);
+        }
         return true;
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (bindingModule != null) {
-            if (keyCode == GLFW.GLFW_KEY_ESCAPE) bindingModule.setKeyBind(GLFW.GLFW_KEY_UNKNOWN);
-            else bindingModule.setKeyBind(keyCode);
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                bindingModule.setKeyBind(GLFW.GLFW_KEY_UNKNOWN);
+                bindingModule = null;
+                return true;
+            }
+            bindingModule.setKeyBind(keyCode);
             bindingModule = null;
             return true;
         }
@@ -202,13 +335,5 @@ public class ClickGuiScreen extends Screen {
         }
         String name = GLFW.glfwGetKeyName(key, 0);
         return name != null ? name.toUpperCase() : "K" + key;
-    }
-
-    private int settingHeight(Setting<?> setting) {
-        return switch (setting.getType()) {
-            case NUMBER -> 28;
-            case COLOR -> 22;
-            default -> 18;
-        };
     }
 }
