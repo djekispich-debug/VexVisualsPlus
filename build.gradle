@@ -9,6 +9,11 @@ base {
     archivesName = project.archives_base_name
 }
 
+// ОФІЦІЙНИЙ СИНТАКСИС КОНФІГУРАЦІЇ LAZY PROPERTY ДЛЯ LOOM 1.11+:
+configure(loom) {
+    dependencyJavadocEnabled.set(false)
+}
+
 repositories {
     mavenCentral()
 }
