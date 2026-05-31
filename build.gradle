@@ -1,5 +1,6 @@
 plugins {
     id 'fabric-loom' version '1.7.4'
+    it.dependencyJavadocEnabled = false 
 }
 
 version = project.mod_version
