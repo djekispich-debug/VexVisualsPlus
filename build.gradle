@@ -9,6 +9,11 @@ base {
     archivesName = project.archives_base_name
 }
 
+// ЦЕЙ БЛОК ОФІЦІЙНО ВИМИКАЄ ПЕРЕВІРКУ JAVADOC У LOOM 1.11+:
+loom {
+    dependencyJavadocEnabled.set(false)
+}
+
 repositories {
     mavenCentral()
 }
