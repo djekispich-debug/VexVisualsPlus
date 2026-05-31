@@ -20,8 +20,8 @@ public class ClickGuiScreen extends Screen {
 
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private Category selectedCategory = Category.HUD;
-    private Module selectedModule;
-    private Module bindingModule;
+    private VexVisuals.module.Module selectedModule;
+    private VexVisuals.module.Module bindingModule;
     private float openProgress;
     private long openStartMs;
     private int panelScroll;
