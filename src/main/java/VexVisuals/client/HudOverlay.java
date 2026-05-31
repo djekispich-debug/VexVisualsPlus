@@ -1,9 +1,9 @@
 package VexVisuals.client;
 
 import VexVisuals.gui.ClickGuiScreen;
-import VexVisuals.modules.Module;
-import VexVisuals.modules.ModuleRegistry;
-import VexVisuals.modules.ModuleType;
+import VexVisuals.module.Module;
+import VexVisuals.module.ModuleRegistry;
+import VexVisuals.module.ModuleType;
 import VexVisuals.util.ColorManager;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
