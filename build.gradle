@@ -9,11 +9,6 @@ base {
     archivesName = project.archives_base_name
 }
 
-// ОФІЦІЙНИЙ ФІКС ДЛЯ ВИМКНЕННЯ ВАЛІДАЦІЇ JAVADOC У СУЧАСНОМУ LOOM 1.11+:
-loom {
-    dependencyJavadocEnabled = false
-}
-
 repositories {
     mavenCentral()
 }
