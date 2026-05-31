@@ -27,7 +27,8 @@ public final class HudOverlay {
 
     private static void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        if (mc.options.hideGui || mc.player == null) {
+        // Виправлено: hideGui -> hudHidden (для 1.21+)
+        if (mc.options.hudHidden || mc.player == null) {
             return;
         }
         int y = 4;
