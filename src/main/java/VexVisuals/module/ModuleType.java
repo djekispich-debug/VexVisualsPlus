@@ -1,7 +1,7 @@
 package VexVisuals.module;
 
-import VexVisuals.render.JumpCircle;
-import VexVisuals.render.ProjectileTrajectory;
+import VexVisuals.module.JumpCircle;
+import VexVisuals.module.ProjectileTrajectory;
 
 public enum ModuleType {
     ARRAY_LIST(Category.HUD, "ArrayList", "Список активных модулей на экране"),
