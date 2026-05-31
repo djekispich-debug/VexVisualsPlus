@@ -22,7 +22,7 @@ public final class ProjectileTrajectory extends Module {
     private static final double DRAG = 0.99;
 
     public ProjectileTrajectory() {
-        super(ModuleType.PEARL_COOLDOWN);
+        super(ModuleType.PROJECTILE_TRAJECTORY);
     }
 
     public static void setActive(boolean value) {
