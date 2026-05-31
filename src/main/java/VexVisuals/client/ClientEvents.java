@@ -8,7 +8,7 @@ import VexVisuals.render.ProjectileTrajectory;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
-import net.minecraft.client.Minecraft;
+net.minecraft.client.MinecraftClient
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.lwjgl.glfw.GLFW;
 
@@ -34,7 +34,7 @@ public final class ClientEvents {
         });
     }
 
-    private static void onTick(Minecraft mc) {
+    private static void onTick(MinecraftClient mc) {
         if (mc.player == null) {
             return;
         }
