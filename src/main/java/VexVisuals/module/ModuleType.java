@@ -128,7 +128,8 @@ public enum ModuleType {
     SCOREBOARD_HIDE(Category.SCREEN_CAMERA_CHAT, "ScoreboardHide", "Скрытие скорборда"),
     DEATH_COORDINATES(Category.SCREEN_CAMERA_CHAT, "DeathCoordinates", "Координаты смерти в чат"),
     COMPACT_CHAT(Category.SCREEN_CAMERA_CHAT, "CompactChat", "Компактный чат"),
-    CHAT_ANIMATION(Category.SCREEN_CAMERA_CHAT, "ChatAnimation", "Анимация сообщений чата");
+    CHAT_ANIMATION(Category.SCREEN_CAMERA_CHAT, "ChatAnimation", "Анимация сообщений чата"),
+    PROJECTILE_TRAJECTORY(Category.INDICATORS, "ProjectileTrajectory", "Показує траєкторію снарядів (траектория снаряда)");
 
     private final Category category;
     private final String name;
