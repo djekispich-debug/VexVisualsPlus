@@ -9,9 +9,9 @@ base {
     archivesName = project.archives_base_name
 }
 
-// ОФІЦІЙНИЙ ФІКС ДЛЯ ВИМКНЕННЯ ВАЛІДАЦІЇ JAVADOC У LOOM 1.11+:
+// ОФІЦІЙНИЙ ФІКС ДЛЯ ВИМКНЕННЯ ВАЛІДАЦІЇ JAVADOC У СУЧАСНОМУ LOOM 1.11+:
 loom {
-    it.getDependencyJavadocEnabled().set(false)
+    dependencyJavadocEnabled = false
 }
 
 repositories {
