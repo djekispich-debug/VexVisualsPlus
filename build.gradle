@@ -11,7 +11,7 @@ base {
 
 // ОФІЦІЙНИЙ ФІКС ДЛЯ ВИМКНЕННЯ ВАЛІДАЦІЇ JAVADOC У LOOM 1.11+:
 loom {
-    dependencyJavadocEnabled.set(false)
+    it.getDependencyJavadocEnabled().set(false)
 }
 
 repositories {
