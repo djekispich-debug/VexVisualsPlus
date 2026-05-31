@@ -9,11 +9,6 @@ base {
     archivesName = project.archives_base_name
 }
 
-// ОСЬ ЦЕЙ БЛОК ПОВНІСТЮ ВИРІШУЄ ПРОБЛЕМУ З JAVADOC У LOOM 1.9+:
-loom {
-    repositoryJavadocEnabled = false
-}
-
 repositories {
     mavenCentral()
 }
