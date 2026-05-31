@@ -1,6 +1,12 @@
 package VexVisuals.gui;
 
-import VexVisuals.module.*;
+import VexVisuals.module.Category;
+import VexVisuals.module.Setting;
+import VexVisuals.module.BooleanSetting;
+import VexVisuals.module.NumberSetting;
+import VexVisuals.module.ModeSetting;
+import VexVisuals.module.ColorSetting;
+import VexVisuals.module.ModuleRegistry;
 import VexVisuals.util.ColorManager;
 import VexVisuals.util.Easing;
 import VexVisuals.util.RenderUtil;
@@ -122,10 +128,10 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void renderModuleList(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY) {
-        List<Module> modules = ModuleRegistry.byCategory(selectedCategory);
+        List<VexVisuals.module.Module> modules = ModuleRegistry.byCategory(selectedCategory);
         context.drawText(this.textRenderer, "Модули (" + modules.size() + ")", x, y, ThemeManager.textMuted(), true);
         int rowY = y + 14 - panelScroll;
-        for (Module module : modules) {
+        for (VexVisuals.module.Module module : modules) {
             if (rowY > y + h) break;
             if (rowY + 18 >= y) {
                 boolean hover = mouseX >= x && mouseX < x + w && mouseY >= rowY && mouseY < rowY + 16;
@@ -249,8 +255,8 @@ public class ClickGuiScreen extends Screen {
         int x = (width - panelW) / 2 + 8;
         int y = (height - panelH) / 2 + 68 + 14 - panelScroll;
         int colW = panelW / 3 - 12;
-        List<Module> modules = ModuleRegistry.byCategory(selectedCategory);
-        for (Module module : modules) {
+        List<VexVisuals.module.Module> modules = ModuleRegistry.byCategory(selectedCategory);
+        for (VexVisuals.module.Module module : modules) {
             if (mouseX >= x && mouseX < x + colW && mouseY >= y && mouseY < y + 16) {
                 if (button == 0) {
                     selectedModule = module;
@@ -273,7 +279,6 @@ public class ClickGuiScreen extends Screen {
         int panelH = Math.min(420, height - 50);
         int x = (width - panelW) / 2 + panelW / 3 + 8;
         int y = (height - panelH) / 2 + 68 + 40 - settingsScroll;
-        int w = panelW * 2 / 3 - 16;
         for (Setting<?> setting : selectedModule.getSettings()) {
             int h = settingHeight(setting);
             if (mouseY >= y && mouseY < y + h) {
