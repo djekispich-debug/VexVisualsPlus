@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.11.8' // Повертаємо сучасний Loom під Minecraft 1.21.11
+    id 'net.fabricmc.loom' version '1.11.8' // Повний офіційний ID плагіна
 }
 
 version = project.mod_version
@@ -9,9 +9,9 @@ base {
     archivesName = project.archives_base_name
 }
 
-// ОФІЦІЙНЕ ВИМКНЕННЯ ВАЛІДАЦІЇ ДЛЯ СУЧАСНОГО LOOM 1.11+:
+// ОФІЦІЙНИЙ ФІКС ДЛЯ ВИМКНЕННЯ ВАЛІДАЦІЇ JAVADOC У СУЧАСНОМУ LOOM:
 loom {
-    it.getDependencyJavadocEnabled().set(false)
+    dependencyJavadocEnabled.set(false)
 }
 
 repositories {
