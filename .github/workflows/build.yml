@@ -21,10 +21,10 @@ jobs:
           distribution: 'temurin'
 
       # Інсталюємо та фіксуємо чисту версію Gradle 8.10 в системі
-      - name: Setup Gradle 8.10
+      - name: Setup Gradle 8.11
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.10'
+          gradle-version: '8.11'
           cache-disabled: true # Повністю блокуємо збереження/читання кешу для чистого запуску
 
       # Запускаємо збірку НАПРЯМУ через системний gradle (без ./gradlew)
