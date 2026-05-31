@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version "${loom_version}"
+    id 'fabric-loom' version '1.8.4'
 }
 
 version = project.mod_version
@@ -7,18 +7,6 @@ group = project.maven_group
 
 base {
     archivesName = project.archives_base_name
-}
-
-// ПРАВИЛЬНИЙ СИНТАКСИС ДЛЯ ВИМКНЕННЯ JAVADOC У LOOM 1.11+:
-loom {
-    decompilers {
-        vineflower {
-            options.set([
-                'hdc': '0', // Вимикає генерацію коментарів javadoc декомпілятором
-                'dgs': '1'
-            ])
-        }
-    }
 }
 
 repositories {
