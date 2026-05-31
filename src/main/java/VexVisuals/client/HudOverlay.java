@@ -1,13 +1,14 @@
 package VexVisuals.client;
 
 import VexVisuals.gui.ClickGuiScreen;
-import VexVisuals.module.Module;
-import VexVisuals.module.ModuleRegistry;
-import VexVisuals.module.ModuleType;
+import VexVisuals.modules.Module;
+import VexVisuals.modules.ModuleRegistry;
+import VexVisuals.modules.ModuleType;
 import VexVisuals.util.ColorManager;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderTickCounter;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -24,8 +25,8 @@ public final class HudOverlay {
         HudRenderCallback.EVENT.register(HudOverlay::render);
     }
 
-    private static void render(GuiGraphics g, net.minecraft.client.DeltaTracker tickCounter) {
-        Minecraft mc = Minecraft.getInstance();
+    private static void render(DrawContext context, RenderTickCounter tickCounter) {
+        MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.options.hideGui || mc.player == null) {
             return;
         }
@@ -35,20 +36,20 @@ public final class HudOverlay {
             String nick = mc.player.getName().getString();
             String time = LocalTime.now().format(CLOCK);
             String line = title + "  |  " + nick + "  |  " + time;
-            int w = mc.font.width(line) + 10;
-            g.fill(4, y, 4 + w, y + 14, 0x90000000);
-            g.drawString(mc.font, line, 8, y + 3, ColorManager.chroma(System.currentTimeMillis(), 1));
+            int w = mc.textRenderer.getWidth(line) + 10;
+            context.fill(4, y, 4 + w, y + 14, 0x90000000);
+            context.drawText(mc.textRenderer, line, 8, y + 3, ColorManager.chroma(System.currentTimeMillis(), 1), true);
             y += 16;
         }
         if (isOn(ModuleType.ARRAY_LIST)) {
             List<Module> enabled = ModuleRegistry.all().stream()
                     .filter(Module::isEnabled)
-                    .sorted(Comparator.comparingInt(m -> -mc.font.width(m.getName())))
+                    .sorted(Comparator.comparingInt(m -> -mc.textRenderer.getWidth(m.getName())))
                     .toList();
             int row = y;
             for (Module module : enabled) {
-                g.drawString(mc.font, module.getName(), mc.getWindow().getGuiScaledWidth() - mc.font.width(module.getName()) - 6,
-                        row, ColorManager.chroma(System.currentTimeMillis(), row * 3));
+                context.drawText(mc.textRenderer, module.getName(), mc.getWindow().getScaledWidth() - mc.textRenderer.getWidth(module.getName()) - 6,
+                        row, ColorManager.chroma(System.currentTimeMillis(), row * 3), true);
                 row += 10;
             }
         }
