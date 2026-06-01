@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.11.12'
+    id 'fabric-loom' version '1.11.8'
 }
 
 version = project.mod_version
@@ -30,8 +30,4 @@ processResources {
 tasks.withType(JavaCompile).configureEach {
     options.release = Integer.parseInt(project.java_version)
     options.compilerArgs << "-Xlint:-options" << "-Xdoclint:none"
-}
-
-loom {
-    disableJavadocProcessor = true
 }
