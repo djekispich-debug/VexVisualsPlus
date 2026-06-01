@@ -2,20 +2,13 @@ package VexVisuals.gui;
 
 import VexVisuals.module.Module;
 import VexVisuals.module.Setting;
-import VexVisuals.module.setting.BooleanSetting;
-import VexVisuals.module.setting.NumberSetting;
-import VexVisuals.module.setting.ModeSetting;
+import VexVisuals.module.BooleanSetting;
+import VexVisuals.module.NumberSetting;
+import VexVisuals.module.ModeSetting;
 import VexVisuals.module.ModuleRegistry;
 import VexVisuals.util.ColorManager;
 import VexVisuals.util.Easing;
 import VexVisuals.util.RenderUtil;
-
-import com.vexvisual.gui.Button;
-import com.vexvisual.gui.Category;
-import com.vexvisual.gui.ModuleGui;
-import com.vexvisual.gui.theme.GUITheme;
-import com.vexvisual.gui.theme.ThemeManager;
-import com.vexvisual.spotify.SpotifyManager;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -51,7 +44,6 @@ public class ClickGuiScreen extends Screen {
     private float smoothPanelScroll = 0f;
     private float smoothSettingsScroll = 0f;
 
-    // Кнопки Spotify
     private Button spotifyPrevBtn, spotifyPlayBtn, spotifyNextBtn, themeBtn;
 
     public ClickGuiScreen() {
@@ -173,7 +165,7 @@ public class ClickGuiScreen extends Screen {
                 RenderUtil.fillRounded(context, tx, y, tabW - 4, 20, 6, bgColor);
             }
 
-            String label = cat.name;
+            String label = cat.getDisplayName();
             int lw = textRenderer.getWidth(label);
             int textColor = sel ? theme.text.getRGB() : theme.textSecondary.getRGB();
             context.drawTextWithShadow(textRenderer, label, tx + (tabW - 4 - lw) / 2, y + 6, textColor);
@@ -317,7 +309,6 @@ public class ClickGuiScreen extends Screen {
         int sx = (width - panelW) / 2;
         int sy = (height - panelH) / 2;
 
-        // Категории
         int catBarY = sy + CATEGORY_BAR_Y_OFFSET;
         if (mouseY >= catBarY && mouseY < catBarY + 20) {
             Category[] cats = Category.values();
@@ -334,7 +325,6 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-        // Spotify
         if (selectedCategory == Category.MUSIC) {
             if (spotifyPrevBtn.mouseClicked(mouseX, mouseY, button)) {
                 SpotifyManager.getInstance().previous();
@@ -355,7 +345,6 @@ public class ClickGuiScreen extends Screen {
             return super.mouseClicked(mouseX, mouseY, button);
         }
 
-        // Список модулей
         int contentY = sy + CONTENT_Y_OFFSET;
         int colW = panelW / 3;
         var modules = ModuleRegistry.byCategory(selectedCategory);
@@ -381,7 +370,6 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-        // Настройки
         if (selectedModule != null) {
             int settingsX = sx + colW + 8;
             int settingsY = contentY + 36 - settingsScroll;
