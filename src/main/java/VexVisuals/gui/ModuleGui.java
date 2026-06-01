@@ -48,21 +48,18 @@ public class ModuleGui {
         }
         drawRoundedRect(context, x, y, width, height, 6, bgColor);
 
-        // Индикатор включения
         int dotSize = 6;
         int dotX = x + 5;
         int dotY = y + (height - dotSize) / 2;
         int dotColor = enabled ? theme.primary.getRGB() : theme.border.getRGB();
         drawRoundedRect(context, dotX, dotY, dotSize, dotSize, dotSize / 2, dotColor);
 
-        // Название модуля
         MinecraftClient mc = MinecraftClient.getInstance();
         int textX = x + 16;
         int textY = y + (height - mc.textRenderer.fontHeight) / 2;
         int textColor = enabled ? theme.text.getRGB() : theme.textSecondary.getRGB();
         context.drawTextWithShadow(mc.textRenderer, Text.literal(module.getName()), textX, textY, textColor);
 
-        // Назначенная клавиша
         String bind = getBindDisplay();
         if (!bind.isEmpty()) {
             int bindW = mc.textRenderer.getWidth(bind);
@@ -90,10 +87,9 @@ public class ModuleGui {
     }
 
     private void drawRoundedRect(DrawContext context, int x, int y, int w, int h, int radius, int color) {
-        // Если RenderUtil.fillRounded доступен, используй его; иначе обычный fill
         try {
             VexVisuals.util.RenderUtil.fillRounded(context, x, y, w, h, radius, color);
-        } catch (NoSuchMethodError e) {
+        } catch (Throwable e) {
             context.fill(x, y, x + w, y + h, color);
         }
     }
