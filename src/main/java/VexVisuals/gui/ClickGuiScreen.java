@@ -91,13 +91,12 @@ public class ClickGuiScreen extends Screen {
 
         GUITheme theme = ThemeManager.getCurrentTheme();
 
-        // Вместо drawShadow – просто рамка с прозрачностью
+        // Простая тень вместо drawShadow
         context.fill(sx - 2, sy - 2, sx + scaleW + 2, sy + scaleH + 2, 0x40000000);
         RenderUtil.fillRounded(context, sx, sy, scaleW, scaleH, theme.radius, theme.panel.getRGB());
 
-        // Градиентная полоса – используем простую заливку, если horizontalGradient нет
-        int accentColor = theme.primary.getRGB();
-        context.fill(sx, sy, sx + scaleW, sy + 3, accentColor);
+        // Акцентная полоса
+        context.fill(sx, sy, sx + scaleW, sy + 3, theme.primary.getRGB());
 
         renderHeader(context, sx, sy, scaleW, theme);
         renderCategoryBar(context, sx, sy + CATEGORY_BAR_Y_OFFSET, scaleW, mouseX, mouseY, theme);
@@ -126,7 +125,6 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void renderHeader(DrawContext context, int x, int y, int w, GUITheme theme) {
-        // Заглушка градиента – просто панель
         context.fill(x + 6, y + 6, x + w - 6, y + 6 + HEADER_HEIGHT, theme.panel.getRGB());
 
         String title = CLIENT_TITLE;
@@ -182,7 +180,6 @@ public class ClickGuiScreen extends Screen {
         int scroll = Math.round(smoothPanelScroll);
         int baseY = y + 14 - scroll;
 
-        // Без scissor, просто проверяем границы
         int index = 0;
         for (Module module : modules) {
             int rowY = baseY + index * 18;
