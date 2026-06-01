@@ -74,7 +74,7 @@ public class ClickGuiScreen extends Screen {
         smoothSettingsScroll += (settingsScroll - smoothSettingsScroll) * 0.3f;
     }
 
-    // Вспомогательный метод отрисовки текста (без тени)
+    // Единый метод для вывода текста без тени
     private void drawString(DrawContext context, String text, int x, int y, int color) {
         context.drawText(textRenderer, text, x, y, color, false);
     }
