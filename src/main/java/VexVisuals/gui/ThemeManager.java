@@ -1,4 +1,4 @@
-package com.yourmod.gui.theme;
+package com.VexVisuals.gui;
 
 import java.util.ArrayList;
 import java.util.List;
