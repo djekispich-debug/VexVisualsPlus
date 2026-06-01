@@ -1,20 +1,16 @@
-package com.yourmod.gui;
+package VexVisuals.gui;
 
-import com.yourmod.modules.Module;
-import com.yourmod.gui.theme.GUITheme;
-import com.yourmod.gui.theme.ThemeManager;
+import VexVisuals.module.Module;
+import VexVisuals.gui.GUITheme;
+import VexVisuals.gui.ThemeManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
-import org.lwjgl.glfw.GLFW;
-
-import java.awt.Color;
 
 public class ModuleGui {
     public Module module;
     public int x, y, width, height;
 
-    // Анимации для ховера и переключения
     private float hoverAnim = 0f;
     private float toggleAnim = 0f;
     private boolean selected = false;
@@ -27,7 +23,6 @@ public class ModuleGui {
         this.height = height;
     }
 
-    /** Вызывается из ClickGuiScreen, чтобы подсветить выбранный модуль */
     public void setSelected(boolean sel) {
         this.selected = sel;
     }
@@ -37,24 +32,22 @@ public class ModuleGui {
         boolean hovered = isHovered(mouseX, mouseY);
         boolean enabled = module.isEnabled();
 
-        // Плавные анимации
         hoverAnim += (hovered ? 0.25f : -0.25f);
         hoverAnim = Math.max(0, Math.min(1, hoverAnim));
         toggleAnim += (enabled ? 0.25f : -0.25f);
         toggleAnim = Math.max(0, Math.min(1, toggleAnim));
 
-        // Фон строки (закруглённый)
         int bgColor;
         if (selected) {
-            bgColor = lerpColor(theme.primary, theme.panel, 0.4f).getRGB();
+            bgColor = lerpColor(theme.primary.getRGB(), theme.panel.getRGB(), 0.4f);
         } else if (hovered) {
-            bgColor = lerpColor(theme.text, theme.panel, 0.08f).getRGB();
+            bgColor = lerpColor(theme.text.getRGB(), theme.panel.getRGB(), 0.08f);
         } else {
             bgColor = theme.panel.getRGB();
         }
         drawRoundedRect(context, x, y, width, height, 6, bgColor);
 
-        // Кружок-индикатор включения (слева)
+        // Индикатор включения
         int dotSize = 6;
         int dotX = x + 5;
         int dotY = y + (height - dotSize) / 2;
@@ -62,27 +55,18 @@ public class ModuleGui {
         drawRoundedRect(context, dotX, dotY, dotSize, dotSize, dotSize / 2, dotColor);
 
         // Название модуля
+        MinecraftClient mc = MinecraftClient.getInstance();
         int textX = x + 16;
-        int textY = y + (height - MinecraftClient.getInstance().textRenderer.fontHeight) / 2;
+        int textY = y + (height - mc.textRenderer.fontHeight) / 2;
         int textColor = enabled ? theme.text.getRGB() : theme.textSecondary.getRGB();
-        context.drawTextWithShadow(
-                MinecraftClient.getInstance().textRenderer,
-                Text.literal(module.getName()),
-                textX, textY,
-                textColor
-        );
+        context.drawTextWithShadow(mc.textRenderer, Text.literal(module.getName()), textX, textY, textColor);
 
-        // Назначенная клавиша (справа)
-        String bindStr = getBindDisplay();
-        if (!bindStr.isEmpty()) {
-            int bindW = MinecraftClient.getInstance().textRenderer.getWidth(bindStr);
-            int bindX = x + width - bindW - 6;
-            context.drawTextWithShadow(
-                    MinecraftClient.getInstance().textRenderer,
-                    Text.literal(bindStr),
-                    bindX, textY,
-                    theme.textSecondary.getRGB()
-            );
+        // Назначенная клавиша (если есть)
+        String bind = getBindDisplay();
+        if (!bind.isEmpty()) {
+            int bindW = mc.textRenderer.getWidth(bind);
+            context.drawTextWithShadow(mc.textRenderer, Text.literal(bind),
+                    x + width - bindW - 6, textY, theme.textSecondary.getRGB());
         }
     }
 
@@ -90,31 +74,22 @@ public class ModuleGui {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 
-    /** Показывает клавишу в виде [R] или пустую строку, если не назначена */
     private String getBindDisplay() {
         int key = module.getKeyBind();
-        if (key == GLFW.GLFW_KEY_UNKNOWN) return "";
-        String name = module.getKeyBindName(); // предполагается, что есть такой метод в Module
-        return "[" + (name != null ? name : GLFW.glfwGetKeyName(key, 0)) + "]";
+        if (key == org.lwjgl.glfw.GLFW.GLFW_KEY_UNKNOWN) return "";
+        String name = module.getKeyBindName();
+        return "[" + (name != null ? name : "") + "]";
     }
 
-    /** Смешивание двух цветов */
-    private Color lerpColor(Color a, Color b, float t) {
-        int red = (int)(a.getRed() * (1 - t) + b.getRed() * t);
-        int green = (int)(a.getGreen() * (1 - t) + b.getGreen() * t);
-        int blue = (int)(a.getBlue() * (1 - t) + b.getBlue() * t);
-        return new Color(
-                Math.min(255, Math.max(0, red)),
-                Math.min(255, Math.max(0, green)),
-                Math.min(255, Math.max(0, blue))
-        );
+    private int lerpColor(int c1, int c2, float t) {
+        int r = (int)(((c1 >> 16) & 0xFF) * (1 - t) + ((c2 >> 16) & 0xFF) * t);
+        int g = (int)(((c1 >> 8) & 0xFF) * (1 - t) + ((c2 >> 8) & 0xFF) * t);
+        int b = (int)((c1 & 0xFF) * (1 - t) + (c2 & 0xFF) * t);
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 
-    /** Заглушка закруглённого прямоугольника – замените на RenderUtil.fillRounded, если он есть */
     private void drawRoundedRect(DrawContext context, int x, int y, int w, int h, int radius, int color) {
-        // Если в проекте есть VexVisuals.util.RenderUtil, используйте:
-        // VexVisuals.util.RenderUtil.fillRounded(context, x, y, w, h, radius, color);
-        // Иначе временно рисуем обычный прямоугольник:
+        // Если есть RenderUtil, можно заменить на RenderUtil.fillRounded()
         context.fill(x, y, x + w, y + h, color);
     }
 }
