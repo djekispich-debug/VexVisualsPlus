@@ -6,11 +6,11 @@ import VexVisuals.module.BooleanSetting;
 import VexVisuals.module.NumberSetting;
 import VexVisuals.module.ModeSetting;
 import VexVisuals.module.ModuleRegistry;
+import VexVisuals.module.Category;
 import VexVisuals.util.ColorManager;
 import VexVisuals.util.Easing;
 import VexVisuals.util.RenderUtil;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -91,10 +91,13 @@ public class ClickGuiScreen extends Screen {
 
         GUITheme theme = ThemeManager.getCurrentTheme();
 
-        RenderUtil.drawShadow(context, sx, sy, scaleW, scaleH, 15, 0x40000000, 0x00000000);
+        // Вместо drawShadow – просто рамка с прозрачностью
+        context.fill(sx - 2, sy - 2, sx + scaleW + 2, sy + scaleH + 2, 0x40000000);
         RenderUtil.fillRounded(context, sx, sy, scaleW, scaleH, theme.radius, theme.panel.getRGB());
-        RenderUtil.horizontalGradient(context, sx, sy, sx + scaleW, sy + 3,
-                theme.primary.getRGB(), ColorManager.brighter(theme.primary.getRGB(), 0.3f));
+
+        // Градиентная полоса – используем простую заливку, если horizontalGradient нет
+        int accentColor = theme.primary.getRGB();
+        context.fill(sx, sy, sx + scaleW, sy + 3, accentColor);
 
         renderHeader(context, sx, sy, scaleW, theme);
         renderCategoryBar(context, sx, sy + CATEGORY_BAR_Y_OFFSET, scaleW, mouseX, mouseY, theme);
@@ -123,8 +126,8 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void renderHeader(DrawContext context, int x, int y, int w, GUITheme theme) {
-        RenderUtil.horizontalGradient(context, x + 6, y + 6, w - 12, HEADER_HEIGHT,
-                ColorManager.brighter(theme.panel.getRGB(), 0.2f), theme.panel.getRGB());
+        // Заглушка градиента – просто панель
+        context.fill(x + 6, y + 6, x + w - 6, y + 6 + HEADER_HEIGHT, theme.panel.getRGB());
 
         String title = CLIENT_TITLE;
         String nickname = client.player != null ? client.player.getName().getString() : "Offline";
@@ -179,8 +182,7 @@ public class ClickGuiScreen extends Screen {
         int scroll = Math.round(smoothPanelScroll);
         int baseY = y + 14 - scroll;
 
-        RenderUtil.enableScissor(x, y, w, h);
-
+        // Без scissor, просто проверяем границы
         int index = 0;
         for (Module module : modules) {
             int rowY = baseY + index * 18;
@@ -194,8 +196,6 @@ public class ClickGuiScreen extends Screen {
             gui.render(context, mouseX, mouseY);
             index++;
         }
-
-        RenderUtil.disableScissor();
 
         int totalHeight = modules.size() * 18;
         int maxScroll = Math.max(0, totalHeight - h);
@@ -222,7 +222,6 @@ public class ClickGuiScreen extends Screen {
         int sy = y + 36 - scroll;
         int settingsW = w - 10;
 
-        RenderUtil.enableScissor(x, y + 36, w, h - 36);
         for (Setting<?> setting : selectedModule.getSettings()) {
             if (sy > y + h) break;
             if (sy + 20 >= y + 36) {
@@ -230,7 +229,6 @@ public class ClickGuiScreen extends Screen {
             }
             sy += (setting instanceof NumberSetting) ? 26 : 18;
         }
-        RenderUtil.disableScissor();
 
         int totalHeight = selectedModule.getSettings().stream()
                 .mapToInt(s -> s instanceof NumberSetting ? 26 : 18).sum();
@@ -255,7 +253,7 @@ public class ClickGuiScreen extends Screen {
             RenderUtil.fillRounded(context, toggleX, toggleY, toggleW, toggleH, toggleH / 2,
                     on ? theme.primary.getRGB() : theme.border.getRGB());
             int dotX = on ? toggleX + toggleW - 7 : toggleX + 2;
-            RenderUtil.fillRounded(context, dotX, toggleY - 1, 7, 7, 3.5f, 0xFFFFFFFF);
+            RenderUtil.fillRounded(context, dotX, toggleY - 1, 7, 7, 3, 0xFFFFFFFF);
         } else if (setting instanceof ModeSetting ms) {
             String mode = ms.get();
             int modeW = textRenderer.getWidth(mode);
