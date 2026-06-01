@@ -1,4 +1,4 @@
-package com.vexvisual.spotify;
+package VexVisuals.gui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,18 +7,15 @@ import java.util.Random;
 public class SpotifyManager {
     private static SpotifyManager instance;
 
-    // Состояние плеера
     private boolean connected = false;
     private boolean isPlaying = false;
     private int currentTrackIndex = 0;
-    private long trackStartTime = 0;      // для имитации прогресса
-    private int trackDurationMs = 180000; // 3 минуты по умолчанию
+    private long trackStartTime = 0;
+    private int trackDurationMs = 180000;
 
-    // Демо-плейлист (можно заменить на реальные треки)
     private final List<Track> playlist = new ArrayList<>();
     private final Random random = new Random();
 
-    // Внутренний класс для хранения информации о треке
     public static class Track {
         public final String title;
         public final String artist;
@@ -36,7 +33,6 @@ public class SpotifyManager {
     }
 
     private SpotifyManager() {
-        // Наполняем демо-плейлист
         playlist.add(new Track("Blinding Lights", "The Weeknd", 200000));
         playlist.add(new Track("Shape of You", "Ed Sheeran", 233000));
         playlist.add(new Track("Bohemian Rhapsody", "Queen", 355000));
@@ -48,13 +44,9 @@ public class SpotifyManager {
     }
 
     public static SpotifyManager getInstance() {
-        if (instance == null) {
-            instance = new SpotifyManager();
-        }
+        if (instance == null) instance = new SpotifyManager();
         return instance;
     }
-
-    // ---------- Публичные методы, используемые GUI ----------
 
     public void connect() {
         connected = true;
@@ -65,14 +57,11 @@ public class SpotifyManager {
         }
     }
 
-    public boolean isConnected() {
-        return connected;
-    }
+    public boolean isConnected() { return connected; }
 
     public String getCurrentTrack() {
         if (!connected || playlist.isEmpty()) return "Not connected";
-        Track track = playlist.get(currentTrackIndex);
-        return track.getFullName();
+        return playlist.get(currentTrackIndex).getFullName();
     }
 
     public String getCurrentArtist() {
@@ -80,17 +69,12 @@ public class SpotifyManager {
         return playlist.get(currentTrackIndex).artist;
     }
 
-    public boolean isPlaying() {
-        return connected && isPlaying;
-    }
+    public boolean isPlaying() { return connected && isPlaying; }
 
     public void togglePlay() {
-        if (!connected) {
-            connect();
-        }
+        if (!connected) connect();
         isPlaying = !isPlaying;
         if (isPlaying) {
-            // Сброс времени начала, если переключили на play после паузы
             trackStartTime = System.currentTimeMillis() - getCurrentProgressMs();
         }
     }
@@ -111,23 +95,18 @@ public class SpotifyManager {
         isPlaying = true;
     }
 
-    // Получить прогресс в миллисекундах (для отображения полосы)
     public int getCurrentProgressMs() {
         if (!isPlaying) return 0;
         long elapsed = System.currentTimeMillis() - trackStartTime;
         if (elapsed >= trackDurationMs) {
-            // Автоматический переход к следующему треку
             next();
             return 0;
         }
         return (int) elapsed;
     }
 
-    public int getTrackDurationMs() {
-        return trackDurationMs;
-    }
+    public int getTrackDurationMs() { return trackDurationMs; }
 
-    // Форматированное время для GUI (mm:ss)
     public String getFormattedProgress() {
         int current = getCurrentProgressMs() / 1000;
         int total = trackDurationMs / 1000;
@@ -140,17 +119,14 @@ public class SpotifyManager {
         return String.format("%d:%02d", min, sec);
     }
 
-    // Обратная совместимость с вашим старым кодом (если где-то вызывалось control("play"))
     public void control(String action) {
         switch (action) {
             case "play": togglePlay(); break;
             case "next": next(); break;
             case "prev": previous(); break;
-            default: break;
         }
     }
 
-    // Дополнительно: переключение на случайный трек
     public void shuffle() {
         if (!playlist.isEmpty()) {
             currentTrackIndex = random.nextInt(playlist.size());
