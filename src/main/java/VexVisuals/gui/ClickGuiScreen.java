@@ -11,9 +11,14 @@ import VexVisuals.util.ColorManager;
 import VexVisuals.util.Easing;
 import VexVisuals.util.RenderUtil;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.time.LocalTime;
@@ -74,6 +79,15 @@ public class ClickGuiScreen extends Screen {
         smoothSettingsScroll += (settingsScroll - smoothSettingsScroll) * 0.3f;
     }
 
+    // Вспомогательный метод отрисовки строки, обходящий проблемы с сигнатурами
+    private void drawString(DrawContext context, String text, int x, int y, int color) {
+        TextRenderer renderer = textRenderer;
+        Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
+        VertexConsumerProvider.Immediate immediate = client.getBufferBuilders().getEntityVertexConsumers();
+        renderer.draw(Text.literal(text), (float) x, (float) y, color, false, matrix, immediate,
+                TextRenderer.TextLayerType.NORMAL, 0, 0xF000F0);
+    }
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
         context.fill(0, 0, width, height, 0x65000000);
@@ -93,7 +107,6 @@ public class ClickGuiScreen extends Screen {
 
         context.fill(sx - 2, sy - 2, sx + scaleW + 2, sy + scaleH + 2, 0x40000000);
         RenderUtil.fillRounded(context, sx, sy, scaleW, scaleH, theme.radius, theme.panel.getRGB());
-
         context.fill(sx, sy, sx + scaleW, sy + 3, theme.primary.getRGB());
 
         renderHeader(context, sx, sy, scaleW, theme);
@@ -116,7 +129,7 @@ public class ClickGuiScreen extends Screen {
             int hintX = width / 2 - tw / 2 - 8;
             int hintY = height - 24;
             context.fill(hintX, hintY, hintX + tw + 16, hintY + 12, theme.background.getRGB());
-            textRenderer.draw(Text.literal(txt), hintX + 4, hintY + 2, theme.primary.getRGB());
+            drawString(context, txt, hintX + 4, hintY + 2, theme.primary.getRGB());
         }
 
         super.render(context, mouseX, mouseY, partialTicks);
@@ -130,16 +143,16 @@ public class ClickGuiScreen extends Screen {
         String time = LocalTime.now().format(CLOCK);
 
         int titleColor = ColorManager.chroma(System.currentTimeMillis(), 0);
-        textRenderer.draw(Text.literal(title), x + 14, y + 16, titleColor);
+        drawString(context, title, x + 14, y + 16, titleColor);
 
         int nickW = textRenderer.getWidth(nickname);
-        textRenderer.draw(Text.literal(nickname), x + (w - nickW) / 2, y + 16, theme.text.getRGB());
+        drawString(context, nickname, x + (w - nickW) / 2, y + 16, theme.text.getRGB());
 
         int timeW = textRenderer.getWidth(time);
-        textRenderer.draw(Text.literal(time), x + w - timeW - 14, y + 16, theme.primary.getRGB());
+        drawString(context, time, x + w - timeW - 14, y + 16, theme.primary.getRGB());
 
         String sub = "v1.21.11  |  Theme: " + theme.name;
-        textRenderer.draw(Text.literal(sub), x + 14, y + 26, theme.textSecondary.getRGB());
+        drawString(context, sub, x + 14, y + 26, theme.textSecondary.getRGB());
     }
 
     private void renderCategoryBar(DrawContext context, int x, int y, int w, int mouseX, int mouseY, GUITheme theme) {
@@ -167,13 +180,13 @@ public class ClickGuiScreen extends Screen {
             String label = cat.getDisplayName();
             int lw = textRenderer.getWidth(label);
             int textColor = sel ? theme.text.getRGB() : theme.textSecondary.getRGB();
-            textRenderer.draw(Text.literal(label), tx + (tabW - 4 - lw) / 2, y + 6, textColor);
+            drawString(context, label, tx + (tabW - 4 - lw) / 2, y + 6, textColor);
         }
     }
 
     private void renderModuleList(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY, GUITheme theme) {
         var modules = ModuleRegistry.byCategory(selectedCategory);
-        textRenderer.draw(Text.literal("Modules (" + modules.size() + ")"), x, y - 2, theme.textSecondary.getRGB());
+        drawString(context, "Modules (" + modules.size() + ")", x, y - 2, theme.textSecondary.getRGB());
 
         int scroll = Math.round(smoothPanelScroll);
         int baseY = y + 14 - scroll;
@@ -206,12 +219,12 @@ public class ClickGuiScreen extends Screen {
         if (selectedModule == null) {
             String placeholder = "Select a module to view settings";
             int tw = textRenderer.getWidth(placeholder);
-            textRenderer.draw(Text.literal(placeholder), x + (w - tw) / 2, y + h / 3, theme.textSecondary.getRGB());
+            drawString(context, placeholder, x + (w - tw) / 2, y + h / 3, theme.textSecondary.getRGB());
             return;
         }
 
-        textRenderer.draw(Text.literal(selectedModule.getName()), x, y, theme.primary.getRGB());
-        textRenderer.draw(Text.literal(selectedModule.getDescription()), x, y + 12, theme.textSecondary.getRGB());
+        drawString(context, selectedModule.getName(), x, y, theme.primary.getRGB());
+        drawString(context, selectedModule.getDescription(), x, y + 12, theme.textSecondary.getRGB());
 
         int scroll = Math.round(smoothSettingsScroll);
         int sy = y + 36 - scroll;
@@ -237,7 +250,7 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void renderSettingItem(DrawContext context, int x, int y, int w, Setting<?> setting, int mouseX, int mouseY, GUITheme theme) {
-        textRenderer.draw(Text.literal(setting.getName()), x, y + 2, theme.text.getRGB());
+        drawString(context, setting.getName(), x, y + 2, theme.text.getRGB());
 
         if (setting instanceof BooleanSetting bs) {
             boolean on = bs.get();
@@ -252,7 +265,7 @@ public class ClickGuiScreen extends Screen {
         } else if (setting instanceof ModeSetting ms) {
             String mode = ms.get();
             int modeW = textRenderer.getWidth(mode);
-            textRenderer.draw(Text.literal(mode), x + w - modeW - 4, y + 2, theme.primary.getRGB());
+            drawString(context, mode, x + w - modeW - 4, y + 2, theme.primary.getRGB());
         } else if (setting instanceof NumberSetting ns) {
             int barX = x;
             int barY = y + 14;
@@ -265,17 +278,17 @@ public class ClickGuiScreen extends Screen {
 
             String val = String.format("%.2f", ns.get());
             int valW = textRenderer.getWidth(val);
-            textRenderer.draw(Text.literal(val), x + w - valW - 4, y + 2, theme.textSecondary.getRGB());
+            drawString(context, val, x + w - valW - 4, y + 2, theme.textSecondary.getRGB());
         }
     }
 
     private void renderSpotifyTab(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY, GUITheme theme) {
         RenderUtil.fillRounded(context, x, y, w, 80, 8, ColorManager.withAlpha(0x000000, 40));
-        textRenderer.draw(Text.literal("Spotify Player (Pulse Integration)"), x + 15, y + 15, theme.primary.getRGB());
+        drawString(context, "Spotify Player (Pulse Integration)", x + 15, y + 15, theme.primary.getRGB());
 
         SpotifyManager spotify = SpotifyManager.getInstance();
         String track = spotify.getCurrentTrack();
-        textRenderer.draw(Text.literal("Track: " + track), x + 15, y + 32, theme.text.getRGB());
+        drawString(context, "Track: " + track, x + 15, y + 32, theme.text.getRGB());
 
         spotifyPrevBtn.x = x + 15; spotifyPrevBtn.y = y + 50;
         spotifyPlayBtn.x = x + 65; spotifyPlayBtn.y = y + 50;
