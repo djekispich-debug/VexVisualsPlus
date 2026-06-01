@@ -1,4 +1,4 @@
-package com.yourmod.gui.theme;
+package com.VexVisuals.gui.theme;
 
 import java.awt.Color;
 
