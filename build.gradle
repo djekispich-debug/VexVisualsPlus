@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.11.8'
+    id 'fabric-loom' version '1.12.9'
 }
 
 version = project.mod_version
@@ -15,17 +15,13 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-
-    // ВИКОРИСТОВУЄМО YARN З ВАШИХ ПРОПЕРТІ:
     mappings "net.fabricmc:yarn:${yarn_mappings}:v2"
-
     modImplementation "net.fabricmc:fabric-loader:${loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 }
 
 processResources {
     inputs.property "version", project.version
-
     filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
@@ -35,6 +31,8 @@ tasks.withType(JavaCompile).configureEach {
     options.release = Integer.parseInt(project.java_version)
     options.compilerArgs << "-Xlint:-options" << "-Xdoclint:none"
 }
+
+// Отключаем javadoc-процессор Fabric API
 loom {
     disableJavadocProcessor = true
 }
