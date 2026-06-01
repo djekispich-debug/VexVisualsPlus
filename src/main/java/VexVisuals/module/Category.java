@@ -7,6 +7,7 @@ public enum Category {
     COSMETICS("Cosmetics"),
     WORLD_STYLE("World Style"),
     SCREEN_CAMERA_CHAT("Screen, Camera & Chat");
+    MUSIC("Music");
 
     private final String displayName;
 
