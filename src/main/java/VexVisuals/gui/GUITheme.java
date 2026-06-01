@@ -1,4 +1,4 @@
-package com.VexVisuals.gui.theme;
+package com.VexVisuals.gui;
 
 import java.awt.Color;
 
