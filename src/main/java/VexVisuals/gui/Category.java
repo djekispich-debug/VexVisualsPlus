@@ -1,4 +1,4 @@
-package VexVisual.gui;
+package VexVisuals.gui;
 
 public enum Category {
     COMBAT("Combat"),
