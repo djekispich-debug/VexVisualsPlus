@@ -35,3 +35,6 @@ tasks.withType(JavaCompile).configureEach {
     options.release = Integer.parseInt(project.java_version)
     options.compilerArgs << "-Xlint:-options" << "-Xdoclint:none"
 }
+loom {
+    disableJavadocProcessor = true
+}
