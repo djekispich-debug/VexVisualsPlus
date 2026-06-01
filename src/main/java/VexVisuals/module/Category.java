@@ -1,21 +1,24 @@
 package VexVisuals.module;
 
 public enum Category {
-    HUD("HUD / Интерфейс"),
-    COMBAT_VISUALS("Combat Visuals"),
-    INDICATORS("Indicators & Graphs"),
-    COSMETICS("Cosmetics"),
-    WORLD_STYLE("World Style"),
-    SCREEN_CAMERA_CHAT("Screen, Camera & Chat");
+    COMBAT("Combat"),
+    RENDER("Render"),
+    MOVEMENT("Movement"),
+    PLAYER("Player"),
+    MISC("Misc"),
     MUSIC("Music");
 
-    private final String displayName;
+    private final String name;
 
-    Category(String displayName) {
-        this.displayName = displayName;
+    Category(String name) {
+        this.name = name;
     }
 
     public String getDisplayName() {
-        return displayName;
+        return name;
+    }
+
+    public String getName() {
+        return name;
     }
 }
