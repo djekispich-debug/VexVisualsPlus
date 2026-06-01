@@ -1,13 +1,14 @@
 package VexVisuals.gui;
 
-import VexVisuals.module.Category;
 import VexVisuals.module.Module;
 import VexVisuals.module.Setting;
 import VexVisuals.module.setting.BooleanSetting;
 import VexVisuals.module.setting.NumberSetting;
 import VexVisuals.module.setting.ModeSetting;
 import VexVisuals.module.ModuleRegistry;
-import VexVisuals.util.*;
+import VexVisuals.util.ColorManager;
+import VexVisuals.util.Easing;
+import VexVisuals.util.RenderUtil;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -20,7 +21,7 @@ public class ClickGuiScreen extends Screen {
     public static final String CLIENT_TITLE = "VexVisuals+";
     private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    // Константы для размеров и стиля
+    // Конфигурация панели
     private static final int PANEL_MAX_W = 720;
     private static final int PANEL_MAX_H = 420;
     private static final int HEADER_HEIGHT = 36;
@@ -28,18 +29,19 @@ public class ClickGuiScreen extends Screen {
     private static final int CONTENT_Y_OFFSET = 68;
     private static final int TAB_PADDING = 8;
     private static final int SCROLL_SPEED = 14;
-    private static final float ANIMATION_SPEED = 320f; // ms
+    private static final float ANIMATION_DURATION = 320f; // мс
 
     private Category selectedCategory = Category.values()[0];
     private Module selectedModule;
     private Module bindingModule;
 
+    // Анимация открытия
     private float openProgress = 0f;
     private long openStartTime;
+
+    // Скроллы
     private int panelScroll = 0;
     private int settingsScroll = 0;
-
-    // Для плавной прокрутки мышью (интерполяция)
     private float smoothPanelScroll = 0f;
     private float smoothSettingsScroll = 0f;
 
@@ -51,7 +53,7 @@ public class ClickGuiScreen extends Screen {
     protected void init() {
         openStartTime = System.currentTimeMillis();
         openProgress = 0f;
-        // Сброс скролла при открытии
+        // Сброс скроллов при каждом открытии
         panelScroll = 0;
         settingsScroll = 0;
         smoothPanelScroll = 0f;
@@ -61,57 +63,54 @@ public class ClickGuiScreen extends Screen {
     @Override
     public void tick() {
         long elapsed = System.currentTimeMillis() - openStartTime;
-        openProgress = Math.min(1f, elapsed / ANIMATION_SPEED);
+        openProgress = Math.min(1f, elapsed / ANIMATION_DURATION);
 
-        // Плавное приближение к целевым значениям скролла
+        // Плавное приближение скролла
         smoothPanelScroll += (panelScroll - smoothPanelScroll) * 0.3f;
         smoothSettingsScroll += (settingsScroll - smoothSettingsScroll) * 0.3f;
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
-        // Полупрозрачный фон
+        // Затемнение фона
         context.fill(0, 0, width, height, 0x65000000);
 
         float progress = Easing.easeOutCubic(openProgress);
         int panelW = Math.min(PANEL_MAX_W, width - 40);
         int panelH = Math.min(PANEL_MAX_H, height - 50);
 
-        int bx = (width - panelW) / 2;
-        int by = (height - panelH) / 2;
-        int slideY = (int) ((1f - progress) * 40);
-
-        int x = bx;
-        int y = by + slideY;
-
+        // Центрирование и анимация появления
+        int x = (width - panelW) / 2;
+        int y = (height - panelH) / 2 + (int) ((1f - progress) * 40);
         int scaleW = (int) (panelW * progress);
         int scaleH = (int) (panelH * progress);
         int sx = x + (panelW - scaleW) / 2;
         int sy = y + (panelH - scaleH) / 2;
 
-        // Тень под панелью (если есть такой метод в RenderUtil)
+        // Тень под панелью
         RenderUtil.drawShadow(context, sx, sy, scaleW, scaleH, 15, 0x40000000, 0x00000000);
 
-        // Основная панель с закруглением
+        // Основной фон панели с закруглением
         RenderUtil.fillRounded(context, sx, sy, scaleW, scaleH, 12, ThemeManager.panel());
 
-        // Акцентная полоса сверху
+        // Акцентная полоса сверху с градиентом
         RenderUtil.horizontalGradient(context, sx, sy, sx + scaleW, sy + 3,
                 ThemeManager.accent(), ColorManager.brighter(ThemeManager.accent(), 0.3f));
 
+        // Заголовок
         renderHeader(context, sx, sy, scaleW);
+        // Панель вкладок категорий
         renderCategoryBar(context, sx, sy + CATEGORY_BAR_Y_OFFSET, scaleW, mouseX, mouseY);
 
         int contentY = sy + CONTENT_Y_OFFSET;
         int contentH = scaleH - 76;
         int colW = scaleW / 3;
 
+        // Основной контент (список модулей + детали или Spotify)
         if (selectedCategory == Category.SPOTIFY) {
             renderSpotifyTab(context, sx + 15, contentY, scaleW - 30, contentH, mouseX, mouseY);
         } else {
-            // Левая панель со списком модулей
             renderModuleList(context, sx + 8, contentY, colW - 12, contentH, mouseX, mouseY);
-            // Правая панель с настройками
             renderModuleDetails(context, sx + colW + 8, contentY, scaleW - colW - 16, contentH, mouseX, mouseY);
         }
 
@@ -130,7 +129,6 @@ public class ClickGuiScreen extends Screen {
 
     private void renderHeader(DrawContext context, int x, int y, int w) {
         int barH = HEADER_HEIGHT;
-        // Градиентный фон заголовка
         RenderUtil.horizontalGradient(context, x + 6, y + 6, w - 12, barH,
                 ThemeManager.headerGradientTop(), ThemeManager.headerGradientBottom());
 
@@ -138,11 +136,11 @@ public class ClickGuiScreen extends Screen {
         String nickname = client.player != null ? client.player.getName().getString() : "Offline";
         String time = LocalTime.now().format(CLOCK);
 
-        // Хромированный цвет для названия клиента
+        // Хромированный цвет названия
         int titleColor = ColorManager.chroma(System.currentTimeMillis(), 0);
         context.drawTextWithShadow(textRenderer, title, x + 14, y + 16, titleColor);
 
-        // Никнейм по центру заголовка
+        // Никнейм по центру
         int nickW = textRenderer.getWidth(nickname);
         context.drawTextWithShadow(textRenderer, nickname, x + (w - nickW) / 2, y + 16, ThemeManager.text());
 
@@ -150,7 +148,7 @@ public class ClickGuiScreen extends Screen {
         int timeW = textRenderer.getWidth(time);
         context.drawTextWithShadow(textRenderer, time, x + w - timeW - 14, y + 16, ThemeManager.accent());
 
-        // Версия и тема
+        // Строка версии и темы
         String sub = "v1.21.11  |  Theme: " + ThemeManager.getCurrent().name();
         context.drawTextWithShadow(textRenderer, sub, x + 14, y + 26, ThemeManager.textMuted());
     }
@@ -166,10 +164,8 @@ public class ClickGuiScreen extends Screen {
 
             int bgColor;
             if (sel) {
-                // Активная вкладка – акцентный цвет с непрозрачностью
                 bgColor = ColorManager.withAlpha(ThemeManager.accent(), 180);
             } else if (hover) {
-                // Ховер – полупрозрачная рамка
                 bgColor = ColorManager.withAlpha(ThemeManager.border(), 80);
             } else {
                 bgColor = 0x00000000;
@@ -188,34 +184,31 @@ public class ClickGuiScreen extends Screen {
 
     private void renderModuleList(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY) {
         var modules = ModuleRegistry.byCategory(selectedCategory);
-        // Заголовок списка
         context.drawTextWithShadow(textRenderer, "Modules (" + modules.size() + ")", x, y - 2, ThemeManager.textMuted());
 
-        // Используем плавный скролл для отрисовки
         int scroll = Math.round(smoothPanelScroll);
         int rowY = y + 14 - scroll;
 
-        // Маска для обрезания содержимого за пределами области
+        // Обрезаем область списка
         RenderUtil.enableScissor(x, y, w, h);
         for (Module module : modules) {
             if (rowY > y + h) break;
             if (rowY + 18 >= y) {
                 boolean hover = mouseX >= x && mouseX < x + w && mouseY >= rowY && mouseY < rowY + 16;
                 boolean selected = module == selectedModule;
-                // Отрисовка строки модуля
                 ModuleGui.renderRow(context, module, x, rowY, w, hover, selected);
             }
             rowY += 18;
         }
         RenderUtil.disableScissor();
 
-        // Полоса прокрутки, если контент выходит
+        // Полоса прокрутки
         int totalHeight = modules.size() * 18;
         int maxScroll = Math.max(0, totalHeight - h);
         if (maxScroll > 0) {
-            float scrollBarHeight = Math.max(20, (float) h / totalHeight * h);
-            float scrollBarY = y + (float) scroll / maxScroll * (h - scrollBarHeight);
-            RenderUtil.fillRounded(context, x + w - 3, (int) scrollBarY, 3, (int) scrollBarHeight, 2,
+            float barHeight = Math.max(20, (float) h / totalHeight * h);
+            float barY = y + (float) scroll / maxScroll * (h - barHeight);
+            RenderUtil.fillRounded(context, x + w - 3, (int) barY, 3, (int) barHeight, 2,
                     ColorManager.withAlpha(ThemeManager.accent(), 120));
         }
     }
@@ -228,19 +221,16 @@ public class ClickGuiScreen extends Screen {
             return;
         }
 
-        // Название модуля и описание
         context.drawTextWithShadow(textRenderer, selectedModule.getName(), x, y, ThemeManager.accent());
         context.drawTextWithShadow(textRenderer, selectedModule.getDescription(), x, y + 12, ThemeManager.textMuted());
 
-        // Рендер настроек с плавным скроллом
         int scroll = Math.round(smoothSettingsScroll);
         int sy = y + 36 - scroll;
-        int maxY = y + h;
         int settingsW = w - 10;
 
         RenderUtil.enableScissor(x, y + 36, w, h - 36);
         for (Setting<?> setting : selectedModule.getSettings()) {
-            if (sy > maxY) break;
+            if (sy > y + h) break;
             if (sy + 20 >= y + 36) {
                 renderSettingItem(context, x, sy, settingsW, setting, mouseX, mouseY);
             }
@@ -249,34 +239,32 @@ public class ClickGuiScreen extends Screen {
         RenderUtil.disableScissor();
 
         // Полоса прокрутки настроек
-        int totalSettingsHeight = selectedModule.getSettings().stream()
+        int totalHeight = selectedModule.getSettings().stream()
                 .mapToInt(s -> s instanceof NumberSetting ? 26 : 18).sum();
-        int maxSettingsScroll = Math.max(0, totalSettingsHeight - (h - 36));
-        if (maxSettingsScroll > 0) {
-            float scrollBarHeight = Math.max(20, (float) (h - 36) / totalSettingsHeight * (h - 36));
-            float scrollBarY = y + 36 + (float) scroll / maxSettingsScroll * ((h - 36) - scrollBarHeight);
-            RenderUtil.fillRounded(context, x + settingsW + 4, (int) scrollBarY, 3, (int) scrollBarHeight, 2,
+        int maxScroll = Math.max(0, totalHeight - (h - 36));
+        if (maxScroll > 0) {
+            float barHeight = Math.max(20, (float) (h - 36) / totalHeight * (h - 36));
+            float barY = y + 36 + (float) scroll / maxScroll * ((h - 36) - barHeight);
+            RenderUtil.fillRounded(context, x + settingsW + 4, (int) barY, 3, (int) barHeight, 2,
                     ColorManager.withAlpha(ThemeManager.accent(), 120));
         }
     }
 
     private void renderSettingItem(DrawContext context, int x, int y, int w, Setting<?> setting, int mouseX, int mouseY) {
-        // Название настройки
         context.drawTextWithShadow(textRenderer, setting.getName(), x, y + 2, ThemeManager.text());
 
         if (setting instanceof BooleanSetting bs) {
-            // Стилизованный переключатель
+            // Переключатель-ползунок
             boolean on = bs.get();
             int toggleX = x + w - 22;
-            int toggleY = y;
+            int toggleY = y + 2;
             int toggleW = 18;
             int toggleH = 10;
-            RenderUtil.fillRounded(context, toggleX, toggleY + 2, toggleW, toggleH, toggleH / 2,
+            RenderUtil.fillRounded(context, toggleX, toggleY, toggleW, toggleH, toggleH / 2,
                     on ? ThemeManager.accent() : ThemeManager.border());
             int dotX = on ? toggleX + toggleW - 7 : toggleX + 2;
-            RenderUtil.fillRounded(context, dotX, toggleY, 7, 7, 3.5f, 0xFFFFFFFF);
+            RenderUtil.fillRounded(context, dotX, toggleY - 1, 7, 7, 3.5f, 0xFFFFFFFF);
         } else if (setting instanceof ModeSetting ms) {
-            // Текущий режим
             String mode = ms.get();
             int modeW = textRenderer.getWidth(mode);
             context.drawTextWithShadow(textRenderer, mode, x + w - modeW - 4, y + 2, ThemeManager.accent());
@@ -287,13 +275,11 @@ public class ClickGuiScreen extends Screen {
             int barW = w - 8;
             int barH = 4;
 
-            // Фон слайдера
             RenderUtil.fillRounded(context, barX, barY, barW, barH, 2, ThemeManager.border());
             double pct = (ns.get() - ns.getMin()) / (ns.getMax() - ns.getMin());
             int fillW = (int) (barW * pct);
             RenderUtil.fillRounded(context, barX, barY, fillW, barH, 2, ThemeManager.accent());
 
-            // Текущее значение
             String val = String.format("%.2f", ns.get());
             int valW = textRenderer.getWidth(val);
             context.drawTextWithShadow(textRenderer, val, x + w - valW - 4, y + 2, ThemeManager.textMuted());
@@ -301,37 +287,32 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void renderSpotifyTab(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY) {
-        // Полупрозрачный фон Spotify секции
         RenderUtil.fillRounded(context, x, y, w, 80, 8, ColorManager.withAlpha(0x000000, 40));
-
-        // Заголовок и трек
         context.drawTextWithShadow(textRenderer, "Spotify Player (Pulse Integration)", x + 15, y + 15, ThemeManager.accent());
         String track = SpotifyManager.getCurrentTrack();
         if (track.isEmpty()) track = "No track playing";
         context.drawTextWithShadow(textRenderer, "Track: " + track, x + 15, y + 32, ThemeManager.text());
 
-        // Медиа-кнопки
         int btnY = y + 50;
         boolean hoverPrev = mouseX >= x + 15 && mouseX < x + 60 && mouseY >= btnY && mouseY < btnY + 20;
         boolean hoverPlay = mouseX >= x + 65 && mouseX < x + 140 && mouseY >= btnY && mouseY < btnY + 20;
         boolean hoverNext = mouseX >= x + 145 && mouseX < x + 190 && mouseY >= btnY && mouseY < btnY + 20;
 
-        Button.draw(context, x + 15, btnY, 45, 20, "\u23EE", hoverPrev);     // ⏮
-        Button.draw(context, x + 65, btnY, 75, 20,
-                SpotifyManager.isPlaying() ? "\u23F8" : "\u25B6", hoverPlay); // ⏸ или ▶
-        Button.draw(context, x + 145, btnY, 45, 20, "\u23ED", hoverNext);    // ⏭
+        Button.draw(context, x + 15, btnY, 45, 20, "\u23EE", hoverPrev);
+        Button.draw(context, x + 65, btnY, 75, 20, SpotifyManager.isPlaying() ? "\u23F8" : "\u25B6", hoverPlay);
+        Button.draw(context, x + 145, btnY, 45, 20, "\u23ED", hoverNext);
 
-        // Кнопка смены темы
         int themeBtnX = x + w - 145;
         int themeBtnY = y + 15;
         boolean themeHover = mouseX >= themeBtnX && mouseX < themeBtnX + 130 && mouseY >= themeBtnY && mouseY < themeBtnY + 35;
         Button.draw(context, themeBtnX, themeBtnY, 130, 20, "Cycle UI Theme", themeHover);
     }
 
+    // ---------- Обработка ввода ----------
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (bindingModule != null) {
-            // Бинд кнопки мыши или клавиши (зависит от контекста)
             bindingModule.setKeyBind(GLFW.GLFW_MOUSE_BUTTON_1 + button);
             bindingModule = null;
             return true;
@@ -342,15 +323,15 @@ public class ClickGuiScreen extends Screen {
         int sx = (width - panelW) / 2;
         int sy = (height - panelH) / 2;
 
-        // Проверка попадания в панель категорий
+        // Категории
         int catBarY = sy + CATEGORY_BAR_Y_OFFSET;
         if (mouseY >= catBarY && mouseY < catBarY + 20) {
-            int catsCount = Category.values().length;
-            int tabW = (panelW - TAB_PADDING * 2) / catsCount;
+            Category[] cats = Category.values();
+            int tabW = (panelW - TAB_PADDING * 2) / cats.length;
             int catX = sx + TAB_PADDING;
-            for (int i = 0; i < catsCount; i++) {
+            for (int i = 0; i < cats.length; i++) {
                 if (mouseX >= catX + i * tabW && mouseX < catX + i * tabW + tabW - 4) {
-                    selectedCategory = Category.values()[i];
+                    selectedCategory = cats[i];
                     selectedModule = null;
                     panelScroll = 0;
                     smoothPanelScroll = 0;
@@ -361,24 +342,15 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-        // Spotify вкладка
+        // Spotify
         if (selectedCategory == Category.SPOTIFY) {
             int spotX = sx + 15;
             int spotY = sy + CONTENT_Y_OFFSET;
             int btnY = spotY + 50;
             if (mouseY >= btnY && mouseY < btnY + 20) {
-                if (mouseX >= spotX + 15 && mouseX < spotX + 60) {
-                    SpotifyManager.control("prev");
-                    return true;
-                }
-                if (mouseX >= spotX + 65 && mouseX < spotX + 140) {
-                    SpotifyManager.control("play");
-                    return true;
-                }
-                if (mouseX >= spotX + 145 && mouseX < spotX + 190) {
-                    SpotifyManager.control("next");
-                    return true;
-                }
+                if (mouseX >= spotX + 15 && mouseX < spotX + 60) { SpotifyManager.control("prev"); return true; }
+                if (mouseX >= spotX + 65 && mouseX < spotX + 140) { SpotifyManager.control("play"); return true; }
+                if (mouseX >= spotX + 145 && mouseX < spotX + 190) { SpotifyManager.control("next"); return true; }
             }
             int themeBtnX = spotX + panelW - 175;
             if (mouseX >= themeBtnX && mouseX < themeBtnX + 130 && mouseY >= spotY + 15 && mouseY < spotY + 35) {
@@ -390,14 +362,13 @@ public class ClickGuiScreen extends Screen {
 
         // Список модулей
         int contentY = sy + CONTENT_Y_OFFSET;
-        int colW = panelW / 3 - 12;
+        int colW = panelW / 3;
         int modListX = sx + 8;
-        int modListW = colW;
-
+        int modListW = colW - 12;
         var modules = ModuleRegistry.byCategory(selectedCategory);
         int rowY = contentY + 14 - panelScroll;
         for (Module module : modules) {
-            if (rowY + 16 < contentY || rowY > contentY + panelH - 76) continue; // не в зоне видимости
+            if (rowY + 16 < contentY || rowY > contentY + panelH - 76) continue;
             if (mouseX >= modListX && mouseX < modListX + modListW && mouseY >= rowY && mouseY < rowY + 16) {
                 if (button == 0) {
                     module.toggle();
@@ -413,7 +384,7 @@ public class ClickGuiScreen extends Screen {
             rowY += 18;
         }
 
-        // Настройки модуля
+        // Настройки
         if (selectedModule != null) {
             int settingsX = sx + colW + 8;
             int settingsY = contentY + 36 - settingsScroll;
@@ -429,12 +400,10 @@ public class ClickGuiScreen extends Screen {
                         ms.cycle();
                         return true;
                     } else if (setting instanceof NumberSetting ns) {
-                        // Обработка клика по слайдеру
                         int barX = settingsX;
                         int barY = settingsY + 14;
                         int barW = settingsW - 8;
-                        int barH = 4;
-                        if (mouseY >= barY - 4 && mouseY <= barY + barH + 4) {
+                        if (mouseY >= barY - 4 && mouseY <= barY + 8) {
                             double pct = Math.max(0, Math.min(1, (mouseX - barX) / (double) barW));
                             ns.set(ns.getMin() + pct * (ns.getMax() - ns.getMin()));
                             return true;
@@ -453,26 +422,22 @@ public class ClickGuiScreen extends Screen {
         int panelW = Math.min(PANEL_MAX_W, width - 40);
         int sx = (width - panelW) / 2;
         int colW = panelW / 3;
-        int midX = sx + colW; // граница между списком модулей и настройками
+        int midX = sx + colW;
 
         int amount = (int) (verticalAmount * SCROLL_SPEED);
 
         if (mouseX < midX) {
-            // Прокрутка списка модулей
             var modules = ModuleRegistry.byCategory(selectedCategory);
             int totalH = modules.size() * 18;
             int visibleH = Math.min(PANEL_MAX_H, height - 50) - 76;
             int maxScroll = Math.max(0, totalH - visibleH);
             panelScroll = Math.max(0, Math.min(panelScroll - amount, maxScroll));
-        } else {
-            // Прокрутка настроек
-            if (selectedModule != null) {
-                int totalH = selectedModule.getSettings().stream()
-                        .mapToInt(s -> s instanceof NumberSetting ? 26 : 18).sum();
-                int visibleH = Math.min(PANEL_MAX_H, height - 50) - 76 - 36;
-                int maxScroll = Math.max(0, totalH - visibleH);
-                settingsScroll = Math.max(0, Math.min(settingsScroll - amount, maxScroll));
-            }
+        } else if (selectedModule != null) {
+            int totalH = selectedModule.getSettings().stream()
+                    .mapToInt(s -> s instanceof NumberSetting ? 26 : 18).sum();
+            int visibleH = Math.min(PANEL_MAX_H, height - 50) - 76 - 36;
+            int maxScroll = Math.max(0, totalH - visibleH);
+            settingsScroll = Math.max(0, Math.min(settingsScroll - amount, maxScroll));
         }
         return true;
     }
