@@ -10,13 +10,14 @@ import VexVisuals.util.ColorManager;
 import VexVisuals.util.Easing;
 import VexVisuals.util.RenderUtil;
 
-import com.vexvisual.gui.Button;          // ваш Button
-import com.vexvisual.gui.Category;        // ваш Category (MUSIC для Spotify)
-import com.vexvisual.gui.ModuleGui;       // ваш ModuleGui
-import com.vexvisual.gui.theme.GUITheme;  // ваш GUITheme
-import com.vexvisual.gui.theme.ThemeManager; // ваш ThemeManager
-import com.vexvisual.spotify.SpotifyManager; // ваш SpotifyManager
+import com.vexvisual.gui.Button;
+import com.vexvisual.gui.Category;
+import com.vexvisual.gui.ModuleGui;
+import com.vexvisual.gui.theme.GUITheme;
+import com.vexvisual.gui.theme.ThemeManager;
+import com.vexvisual.spotify.SpotifyManager;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -24,7 +25,6 @@ import org.lwjgl.glfw.GLFW;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 
 public class ClickGuiScreen extends Screen {
     public static final String CLIENT_TITLE = "VexVisuals+";
@@ -39,7 +39,7 @@ public class ClickGuiScreen extends Screen {
     private static final int SCROLL_SPEED = 14;
     private static final float ANIMATION_DURATION = 320f;
 
-    private Category selectedCategory = Category.COMBAT; // начинаем с Combat
+    private Category selectedCategory = Category.COMBAT;
     private Module selectedModule;
     private Module bindingModule;
 
@@ -51,10 +51,7 @@ public class ClickGuiScreen extends Screen {
     private float smoothPanelScroll = 0f;
     private float smoothSettingsScroll = 0f;
 
-    // Хранилище GUI для модулей, чтобы не пересоздавать каждый кадр
-    private final Map<Module, ModuleGui> moduleGuiMap = new HashMap<>();
-
-    // Кнопки Spotify создаются один раз
+    // Кнопки Spotify
     private Button spotifyPrevBtn, spotifyPlayBtn, spotifyNextBtn, themeBtn;
 
     public ClickGuiScreen() {
@@ -70,10 +67,6 @@ public class ClickGuiScreen extends Screen {
         smoothPanelScroll = 0f;
         smoothSettingsScroll = 0f;
 
-        // Очищаем старые ModuleGui, они будут пересозданы при первом рендере
-        moduleGuiMap.clear();
-
-        // Кнопки Spotify (разместим пока в (0,0), координаты обновим при рендере)
         spotifyPrevBtn = new Button(0, 0, 45, 20, "\u23EE");
         spotifyPlayBtn = new Button(0, 0, 75, 20, "\u25B6");
         spotifyNextBtn = new Button(0, 0, 45, 20, "\u23ED");
@@ -106,7 +99,6 @@ public class ClickGuiScreen extends Screen {
 
         GUITheme theme = ThemeManager.getCurrentTheme();
 
-        // Тень и панель
         RenderUtil.drawShadow(context, sx, sy, scaleW, scaleH, 15, 0x40000000, 0x00000000);
         RenderUtil.fillRounded(context, sx, sy, scaleW, scaleH, theme.radius, theme.panel.getRGB());
         RenderUtil.horizontalGradient(context, sx, sy, sx + scaleW, sy + 3,
@@ -181,7 +173,7 @@ public class ClickGuiScreen extends Screen {
                 RenderUtil.fillRounded(context, tx, y, tabW - 4, 20, 6, bgColor);
             }
 
-            String label = cat.name; // ваше поле name
+            String label = cat.name;
             int lw = textRenderer.getWidth(label);
             int textColor = sel ? theme.text.getRGB() : theme.textSecondary.getRGB();
             context.drawTextWithShadow(textRenderer, label, tx + (tabW - 4 - lw) / 2, y + 6, textColor);
@@ -197,11 +189,6 @@ public class ClickGuiScreen extends Screen {
 
         RenderUtil.enableScissor(x, y, w, h);
 
-        // Убедимся, что для каждого модуля есть ModuleGui
-        for (Module module : modules) {
-            moduleGuiMap.computeIfAbsent(module, m -> new ModuleGui(m, 0, 0)); // координаты потом переставим
-        }
-
         int index = 0;
         for (Module module : modules) {
             int rowY = baseY + index * 18;
@@ -210,20 +197,9 @@ public class ClickGuiScreen extends Screen {
                 continue;
             }
 
-            ModuleGui gui = moduleGuiMap.get(module);
-            if (gui != null) {
-                // Обновляем положение кнопки внутри ModuleGui
-                gui.button.x = x;
-                gui.button.y = rowY;
-                gui.button.width = w;
-                gui.button.height = 16;
-                gui.button.toggled = module.isEnabled(); // синхронизация состояния
-                gui.render(context, mouseX, mouseY);
-                // Подсветка выбранного модуля
-                if (module == selectedModule) {
-                    RenderUtil.fillRounded(context, x, rowY, w, 16, 4, ColorManager.withAlpha(theme.primary.getRGB(), 60));
-                }
-            }
+            ModuleGui gui = new ModuleGui(module, x, rowY, w, 16);
+            gui.setSelected(module == selectedModule);
+            gui.render(context, mouseX, mouseY);
             index++;
         }
 
@@ -313,24 +289,21 @@ public class ClickGuiScreen extends Screen {
         context.drawTextWithShadow(textRenderer, "Spotify Player (Pulse Integration)", x + 15, y + 15, theme.primary.getRGB());
 
         SpotifyManager spotify = SpotifyManager.getInstance();
-        String track = spotify.currentTrack; // если добавите геттер, замените на spotify.getCurrentTrack()
-        if (track == null || track.isEmpty()) track = "No track playing";
+        String track = spotify.getCurrentTrack();
         context.drawTextWithShadow(textRenderer, "Track: " + track, x + 15, y + 32, theme.text.getRGB());
 
-        // Обновляем кнопки
         spotifyPrevBtn.x = x + 15; spotifyPrevBtn.y = y + 50;
         spotifyPlayBtn.x = x + 65; spotifyPlayBtn.y = y + 50;
         spotifyNextBtn.x = x + 145; spotifyNextBtn.y = y + 50;
         themeBtn.x = x + w - 145; themeBtn.y = y + 15;
 
         spotifyPrevBtn.render(context, mouseX, mouseY);
-        spotifyPlayBtn.text = spotify.isPlaying ? "\u23F8" : "\u25B6"; // обновляем иконку
+        spotifyPlayBtn.text = spotify.isPlaying() ? "\u23F8" : "\u25B6";
         spotifyPlayBtn.render(context, mouseX, mouseY);
         spotifyNextBtn.render(context, mouseX, mouseY);
         themeBtn.render(context, mouseX, mouseY);
     }
 
-    // ------------------ Обработка ввода ------------------
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (bindingModule != null) {
@@ -361,10 +334,10 @@ public class ClickGuiScreen extends Screen {
             }
         }
 
-        // Spotify кнопки
+        // Spotify
         if (selectedCategory == Category.MUSIC) {
             if (spotifyPrevBtn.mouseClicked(mouseX, mouseY, button)) {
-                SpotifyManager.getInstance().previous(); // замените на actual control
+                SpotifyManager.getInstance().previous();
                 return true;
             }
             if (spotifyPlayBtn.mouseClicked(mouseX, mouseY, button)) {
@@ -387,16 +360,16 @@ public class ClickGuiScreen extends Screen {
         int colW = panelW / 3;
         var modules = ModuleRegistry.byCategory(selectedCategory);
         int rowY = contentY + 14 - panelScroll;
+        int modListX = sx + 8;
+        int modListW = colW - 12;
+
         for (int i = 0; i < modules.size(); i++) {
             Module module = modules.get(i);
             int ry = rowY + i * 18;
             if (ry + 16 < contentY || ry > contentY + panelH - 76) continue;
-            ModuleGui gui = moduleGuiMap.get(module);
-            if (gui != null && mouseX >= gui.button.x && mouseX < gui.button.x + gui.button.width
-                    && mouseY >= ry && mouseY < ry + 16) {
+            if (mouseX >= modListX && mouseX < modListX + modListW && mouseY >= ry && mouseY < ry + 16) {
                 if (button == 0) {
                     module.toggle();
-                    gui.button.toggled = module.isEnabled();
                 } else if (button == 1) {
                     selectedModule = module;
                     settingsScroll = 0;
