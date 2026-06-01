@@ -6,11 +6,20 @@ public enum Category {
     MOVEMENT("Movement"),
     PLAYER("Player"),
     MISC("Misc"),
-    MUSIC("Music"); // Специальная категория для Spotify
+    MUSIC("Music");
 
-    public final String name;
+    private final String name;
 
     Category(String name) {
         this.name = name;
+    }
+
+    /** Возвращает название категории для отображения в GUI */
+    public String getDisplayName() {
+        return name;
+    }
+
+    public String getName() {
+        return name;
     }
 }
