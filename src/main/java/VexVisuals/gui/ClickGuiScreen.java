@@ -116,7 +116,7 @@ public class ClickGuiScreen extends Screen {
             int hintX = width / 2 - tw / 2 - 8;
             int hintY = height - 24;
             context.fill(hintX, hintY, hintX + tw + 16, hintY + 12, theme.background.getRGB());
-            context.drawText(textRenderer, Text.literal(txt), width / 2 - tw / 2, hintY + 2, theme.primary.getRGB());
+            context.drawText(textRenderer, Text.literal(txt), width / 2 - tw / 2, hintY + 2, theme.primary.getRGB(), false);
         }
 
         super.render(context, mouseX, mouseY, partialTicks);
@@ -130,16 +130,16 @@ public class ClickGuiScreen extends Screen {
         String time = LocalTime.now().format(CLOCK);
 
         int titleColor = ColorManager.chroma(System.currentTimeMillis(), 0);
-        context.drawText(textRenderer, Text.literal(title), x + 14, y + 16, titleColor);
+        context.drawText(textRenderer, Text.literal(title), x + 14, y + 16, titleColor, false);
 
         int nickW = textRenderer.getWidth(nickname);
-        context.drawText(textRenderer, Text.literal(nickname), x + (w - nickW) / 2, y + 16, theme.text.getRGB());
+        context.drawText(textRenderer, Text.literal(nickname), x + (w - nickW) / 2, y + 16, theme.text.getRGB(), false);
 
         int timeW = textRenderer.getWidth(time);
-        context.drawText(textRenderer, Text.literal(time), x + w - timeW - 14, y + 16, theme.primary.getRGB());
+        context.drawText(textRenderer, Text.literal(time), x + w - timeW - 14, y + 16, theme.primary.getRGB(), false);
 
         String sub = "v1.21.11  |  Theme: " + theme.name;
-        context.drawText(textRenderer, Text.literal(sub), x + 14, y + 26, theme.textSecondary.getRGB());
+        context.drawText(textRenderer, Text.literal(sub), x + 14, y + 26, theme.textSecondary.getRGB(), false);
     }
 
     private void renderCategoryBar(DrawContext context, int x, int y, int w, int mouseX, int mouseY, GUITheme theme) {
@@ -167,13 +167,13 @@ public class ClickGuiScreen extends Screen {
             String label = cat.getDisplayName();
             int lw = textRenderer.getWidth(label);
             int textColor = sel ? theme.text.getRGB() : theme.textSecondary.getRGB();
-            context.drawText(textRenderer, Text.literal(label), tx + (tabW - 4 - lw) / 2, y + 6, textColor);
+            context.drawText(textRenderer, Text.literal(label), tx + (tabW - 4 - lw) / 2, y + 6, textColor, false);
         }
     }
 
     private void renderModuleList(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY, GUITheme theme) {
         var modules = ModuleRegistry.byCategory(selectedCategory);
-        context.drawText(textRenderer, Text.literal("Modules (" + modules.size() + ")"), x, y - 2, theme.textSecondary.getRGB());
+        context.drawText(textRenderer, Text.literal("Modules (" + modules.size() + ")"), x, y - 2, theme.textSecondary.getRGB(), false);
 
         int scroll = Math.round(smoothPanelScroll);
         int baseY = y + 14 - scroll;
@@ -206,12 +206,12 @@ public class ClickGuiScreen extends Screen {
         if (selectedModule == null) {
             String placeholder = "Select a module to view settings";
             int tw = textRenderer.getWidth(placeholder);
-            context.drawText(textRenderer, Text.literal(placeholder), x + (w - tw) / 2, y + h / 3, theme.textSecondary.getRGB());
+            context.drawText(textRenderer, Text.literal(placeholder), x + (w - tw) / 2, y + h / 3, theme.textSecondary.getRGB(), false);
             return;
         }
 
-        context.drawText(textRenderer, Text.literal(selectedModule.getName()), x, y, theme.primary.getRGB());
-        context.drawText(textRenderer, Text.literal(selectedModule.getDescription()), x, y + 12, theme.textSecondary.getRGB());
+        context.drawText(textRenderer, Text.literal(selectedModule.getName()), x, y, theme.primary.getRGB(), false);
+        context.drawText(textRenderer, Text.literal(selectedModule.getDescription()), x, y + 12, theme.textSecondary.getRGB(), false);
 
         int scroll = Math.round(smoothSettingsScroll);
         int sy = y + 36 - scroll;
@@ -237,7 +237,7 @@ public class ClickGuiScreen extends Screen {
     }
 
     private void renderSettingItem(DrawContext context, int x, int y, int w, Setting<?> setting, int mouseX, int mouseY, GUITheme theme) {
-        context.drawText(textRenderer, Text.literal(setting.getName()), x, y + 2, theme.text.getRGB());
+        context.drawText(textRenderer, Text.literal(setting.getName()), x, y + 2, theme.text.getRGB(), false);
 
         if (setting instanceof BooleanSetting bs) {
             boolean on = bs.get();
@@ -252,7 +252,7 @@ public class ClickGuiScreen extends Screen {
         } else if (setting instanceof ModeSetting ms) {
             String mode = ms.get();
             int modeW = textRenderer.getWidth(mode);
-            context.drawText(textRenderer, Text.literal(mode), x + w - modeW - 4, y + 2, theme.primary.getRGB());
+            context.drawText(textRenderer, Text.literal(mode), x + w - modeW - 4, y + 2, theme.primary.getRGB(), false);
         } else if (setting instanceof NumberSetting ns) {
             int barX = x;
             int barY = y + 14;
@@ -265,17 +265,17 @@ public class ClickGuiScreen extends Screen {
 
             String val = String.format("%.2f", ns.get());
             int valW = textRenderer.getWidth(val);
-            context.drawText(textRenderer, Text.literal(val), x + w - valW - 4, y + 2, theme.textSecondary.getRGB());
+            context.drawText(textRenderer, Text.literal(val), x + w - valW - 4, y + 2, theme.textSecondary.getRGB(), false);
         }
     }
 
     private void renderSpotifyTab(DrawContext context, int x, int y, int w, int h, int mouseX, int mouseY, GUITheme theme) {
         RenderUtil.fillRounded(context, x, y, w, 80, 8, ColorManager.withAlpha(0x000000, 40));
-        context.drawText(textRenderer, Text.literal("Spotify Player (Pulse Integration)"), x + 15, y + 15, theme.primary.getRGB());
+        context.drawText(textRenderer, Text.literal("Spotify Player (Pulse Integration)"), x + 15, y + 15, theme.primary.getRGB(), false);
 
         SpotifyManager spotify = SpotifyManager.getInstance();
         String track = spotify.getCurrentTrack();
-        context.drawText(textRenderer, Text.literal("Track: " + track), x + 15, y + 32, theme.text.getRGB());
+        context.drawText(textRenderer, Text.literal("Track: " + track), x + 15, y + 32, theme.text.getRGB(), false);
 
         spotifyPrevBtn.x = x + 15; spotifyPrevBtn.y = y + 50;
         spotifyPlayBtn.x = x + 65; spotifyPlayBtn.y = y + 50;
