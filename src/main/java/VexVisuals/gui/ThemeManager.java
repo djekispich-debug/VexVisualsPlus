@@ -1,4 +1,4 @@
-package com.VexVisuals.gui;
+package VexVisuals.gui;
 
 import java.util.ArrayList;
 import java.util.List;
