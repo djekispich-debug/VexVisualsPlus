@@ -32,7 +32,6 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs << "-Xlint:-options" << "-Xdoclint:none"
 }
 
-// Отключаем javadoc-процессор Fabric API
 loom {
     disableJavadocProcessor = true
 }
