@@ -1,7 +1,8 @@
-package com.vexvisual.gui;
+package VexVisuals.gui;
 
-import com.vexvisual.gui.theme.GUITheme;
-import com.vexvisual.gui.theme.ThemeManager;
+import VexVisuals.gui.GUITheme;
+import VexVisuals.gui.ThemeManager;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 
@@ -27,7 +28,7 @@ public class Button {
         hoverAnim = hovered ? Math.min(hoverAnim + 0.25f, 1f) : Math.max(hoverAnim - 0.25f, 0f);
         toggleAnim = toggled ? Math.min(toggleAnim + 0.2f, 1f) : Math.max(toggleAnim - 0.2f, 0f);
 
-        int bg = hovered ? brighten(theme.panel, 35) : theme.panel.getRGB();
+        int bg = hovered ? brighten(theme.panel.getRGB(), 35) : theme.panel.getRGB();
         int accent = theme.primary.getRGB();
 
         drawRoundedRect(context, x, y, width, height, theme.radius, bg);
@@ -37,12 +38,13 @@ public class Button {
         }
 
         int textColor = toggled ? accent : theme.text.getRGB();
+        MinecraftClient mc = MinecraftClient.getInstance();
         context.drawCenteredTextWithShadow(mc.textRenderer, Text.literal(text),
-                x + width/2, y + height/2 - 4, textColor);
+                x + width / 2, y + height / 2 - 4, textColor);
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (isHovered((int)mouseX, (int)mouseY) && button == 0) {
+        if (isHovered((int) mouseX, (int) mouseY) && button == 0) {
             toggled = !toggled;
             return true;
         }
@@ -53,5 +55,19 @@ public class Button {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 
-    // Helper methods (drawRoundedRect, brighten и т.д.) — оставь как в прошлом сообщении
+    // Заглушки утилит — если есть RenderUtil, можно заменить на вызовы из него
+    private void drawRoundedRect(DrawContext context, int x, int y, int w, int h, int radius, int color) {
+        context.fill(x, y, x + w, y + h, color);
+    }
+
+    private void drawRoundedRectOutline(DrawContext context, int x, int y, int w, int h, int radius, int color) {
+        context.drawBorder(x, y, w, h, color);
+    }
+
+    private int brighten(int color, int amount) {
+        int r = Math.min(255, ((color >> 16) & 0xFF) + amount);
+        int g = Math.min(255, ((color >> 8) & 0xFF) + amount);
+        int b = Math.min(255, (color & 0xFF) + amount);
+        return (color & 0xFF000000) | (r << 16) | (g << 8) | b;
+    }
 }
