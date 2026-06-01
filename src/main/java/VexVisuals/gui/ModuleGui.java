@@ -6,6 +6,7 @@ import VexVisuals.gui.ThemeManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 public class ModuleGui {
     public Module module;
@@ -61,7 +62,7 @@ public class ModuleGui {
         int textColor = enabled ? theme.text.getRGB() : theme.textSecondary.getRGB();
         context.drawTextWithShadow(mc.textRenderer, Text.literal(module.getName()), textX, textY, textColor);
 
-        // Назначенная клавиша (если есть)
+        // Назначенная клавиша
         String bind = getBindDisplay();
         if (!bind.isEmpty()) {
             int bindW = mc.textRenderer.getWidth(bind);
@@ -76,9 +77,9 @@ public class ModuleGui {
 
     private String getBindDisplay() {
         int key = module.getKeyBind();
-        if (key == org.lwjgl.glfw.GLFW.GLFW_KEY_UNKNOWN) return "";
-        String name = module.getKeyBindName();
-        return "[" + (name != null ? name : "") + "]";
+        if (key == GLFW.GLFW_KEY_UNKNOWN) return "";
+        String name = GLFW.glfwGetKeyName(key, 0);
+        return name != null ? "[" + name + "]" : "";
     }
 
     private int lerpColor(int c1, int c2, float t) {
@@ -89,7 +90,11 @@ public class ModuleGui {
     }
 
     private void drawRoundedRect(DrawContext context, int x, int y, int w, int h, int radius, int color) {
-        // Если есть RenderUtil, можно заменить на RenderUtil.fillRounded()
-        context.fill(x, y, x + w, y + h, color);
+        // Если RenderUtil.fillRounded доступен, используй его; иначе обычный fill
+        try {
+            VexVisuals.util.RenderUtil.fillRounded(context, x, y, w, h, radius, color);
+        } catch (NoSuchMethodError e) {
+            context.fill(x, y, x + w, y + h, color);
+        }
     }
 }
