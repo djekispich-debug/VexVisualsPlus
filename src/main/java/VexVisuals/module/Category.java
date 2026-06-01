@@ -14,7 +14,8 @@ public enum Category {
     COMBAT_VISUALS("Combat Visuals"),
     INDICATORS("Indicators"),
     COSMETICS("Cosmetics"),
-    WORLD_STYLE("World Style");
+    WORLD_STYLE("World Style"),
+    SCREEN_CAMERA_CHAT("Screen/Camera/Chat");   // ← добавленная категория
 
     private final String name;
 
