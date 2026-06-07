@@ -1,12 +1,13 @@
 buildscript {
     repositories {
         maven {
-            url = "https://maven.fabricmc.net/"   // правильный URL!
+            url = "https://maven.fabricmc.net/"
         }
         mavenCentral()
     }
     dependencies {
-        classpath "net.fabricmc:fabric-loom:1.14.2"
+        // Используем стабильную версию Loom
+        classpath "net.fabricmc:fabric-loom:1.15.4"
     }
 }
 
@@ -24,10 +25,10 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings "net.fabricmc:yarn:${yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
 processResources {
