@@ -1,17 +1,6 @@
-buildscript {
-    repositories {
-        maven {
-            url = "https://maven.fabricmc.net/"
-        }
-        mavenCentral()
-    }
-    dependencies {
-        // Используем версию 1.14.1 — она совместима с Gradle 8.14
-        classpath "net.fabricmc:fabric-loom:1.14.1"
-    }
+plugins {
+    id 'fabric-loom' version '1.14.4'
 }
-
-apply plugin: "fabric-loom"
 
 version = project.mod_version
 group = project.maven_group
