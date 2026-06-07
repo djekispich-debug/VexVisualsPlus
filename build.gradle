@@ -1,5 +1,5 @@
 plugins {
-    id "net.fabricmc.loom" version "1.8.13"
+    id "net.fabricmc.loom" version "1.6.12"
 }
 
 version = project.mod_version
@@ -16,7 +16,7 @@ repositories {
         url = "https://fabricmc.net"
     }
     maven {
-        url "https://maven.fabricmc.net"
+        url = "https://maven.fabricmc.net"
     }
 }
 
