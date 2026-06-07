@@ -2,17 +2,17 @@ buildscript {
     repositories {
         maven {
             name = "Fabric"
-            url = "https://maven.fabricmc.net/"
+            url = "https://fabricmc.net"
         }
         mavenCentral()
     }
     dependencies {
-        // Використовуємо реальну, стабільну та сумісну версію Loom
-        classpath "net.fabricmc:fabric-loom:1.15.5"
+        // Найновіша версія Loom, яка підтримує Gradle 8.x та виправляє помилку Javadoc
+        classpath "net.fabricmc:fabric-loom:1.14.3"
     }
 }
 
-// Застосовуємо плагін за його системною назвою
+// Застосовуємо плагін за його внутрішньою назвою
 apply plugin: "fabric-loom"
 
 version = project.mod_version
