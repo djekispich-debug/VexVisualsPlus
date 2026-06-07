@@ -6,8 +6,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // Используем стабильную версию Loom
-        classpath "net.fabricmc:fabric-loom:1.15.4"
+        // Используем версию 1.14.1 — она совместима с Gradle 8.14
+        classpath "net.fabricmc:fabric-loom:1.14.1"
     }
 }
 
