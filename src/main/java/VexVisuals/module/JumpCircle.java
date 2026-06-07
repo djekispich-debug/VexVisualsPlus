@@ -4,7 +4,6 @@ import VexVisuals.util.ColorManager;
 import VexVisuals.util.Easing;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -55,11 +54,9 @@ public final class JumpCircle extends Module {
         }
         long now = System.currentTimeMillis();
         
-        // В Yarn для кастомных линий используется RenderLayer.getLines()
         VertexConsumer lines = providers.getBuffer(RenderLayer.getLines());
         Matrix4f matrix = matrices.peek().getPositionMatrix();
 
-        // Получаем позицию камеры для корректного сдвига координат в мире
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
 
         for (Circle circle : CIRCLES) {
@@ -71,6 +68,7 @@ public final class JumpCircle extends Module {
             int color = ColorManager.withAlpha(0xFF8B5CF6, alpha * 0.85f);
             drawRing(matrix, lines, circle.origin, radius, color, cameraPos);
         }
+        providers.drawCurrentLayer();
     }
 
     private static void drawRing(Matrix4f matrix, VertexConsumer consumer, Vec3d center, float radius, int argb, Vec3d cameraPos) {
@@ -83,7 +81,6 @@ public final class JumpCircle extends Module {
         
         for (int i = 0; i <= segments; i++) {
             double ang = (Math.PI * 2 * i) / segments;
-            // Рассчитываем позицию относительно камеры игрока (World-to-Camera Space)
             Vec3d p = new Vec3d(
                     center.x + Math.cos(ang) * radius - cameraPos.x,
                     center.y + 0.03 - cameraPos.y,
