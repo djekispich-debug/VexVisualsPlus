@@ -1,33 +1,26 @@
 package VexVisuals.module;
 
 public enum Category {
-    // Основные категории для ClickGui
-    COMBAT("Combat"),
-    RENDER("Render"),
-    MOVEMENT("Movement"),
-    PLAYER("Player"),
-    MISC("Misc"),
-    MUSIC("Music"),
+    HUD("HUD", 0xFF6C5CE7),
+    COMBAT_VISUALS("Combat Visuals", 0xFFE74C3C),
+    INDICATORS("Indicators", 0xFF3498DB),
+    COSMETICS("Cosmetics", 0xFFF39C12),
+    WORLD_STYLE("World Style", 0xFF2ECC71),
+    SCREEN_CAMERA_CHAT("Screen & Camera", 0xFF9B59B6);
 
-    // Дополнительные категории для ModuleType
-    HUD("HUD"),
-    COMBAT_VISUALS("Combat Visuals"),
-    INDICATORS("Indicators"),
-    COSMETICS("Cosmetics"),
-    WORLD_STYLE("World Style"),
-    SCREEN_CAMERA_CHAT("Screen/Camera/Chat");   // ← добавленная категория
+    private final String displayName;
+    private final int color;
 
-    private final String name;
-
-    Category(String name) {
-        this.name = name;
+    Category(String displayName, int color) {
+        this.displayName = displayName;
+        this.color = color;
     }
 
     public String getDisplayName() {
-        return name;
+        return displayName;
     }
 
-    public String getName() {
-        return name;
+    public int getColor() {
+        return color;
     }
 }
