@@ -1,6 +1,19 @@
-plugins {
-    id 'net.fabricmc.loom' version '1.16.9'
+buildscript {
+    repositories {
+        maven {
+            name = "Fabric"
+            url = "https://maven.fabricmc.net/"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        // Завантажуємо плагін як пряму залежність збірки за його точними координатами
+        classpath "net.fabricmc:fabric-loom:1.16.9"
+    }
 }
+
+// Застосовуємо плагін за його внутрішнім системним ім'ям
+apply plugin: "fabric-loom"
 
 version = project.mod_version
 group = project.maven_group
