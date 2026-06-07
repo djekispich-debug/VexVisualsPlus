@@ -1,24 +1,6 @@
-buildscript {
-    repositories {
-        maven {
-            name = "Fabric"
-            url = "https://fabricmc.net"
-        }
-        mavenCentral()
-        maven {
-            url "https://maven.architectury.dev"
-        }
-        maven {
-            url "https://maven.fabricmc.net"
-        }
-    }
-    dependencies {
-        classpath "net.fabricmc:fabric-loom:1.7.2"
-    }
+plugins {
+    id "net.fabricmc.loom" version "1.7.2"
 }
-
-// Застосовуємо плагін через завантажений buildscript
-apply plugin: "net.fabricmc.loom"
 
 version = project.mod_version
 group = project.maven_group
