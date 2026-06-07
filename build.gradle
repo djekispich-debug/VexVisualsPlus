@@ -1,18 +1,6 @@
-buildscript {
-    repositories {
-        maven {
-            url = new java.net.URI("https://fabricmc.net")
-        }
-        mavenCentral()
-    }
-    dependencies {
-        // Завантажуємо версію, яка фіксить Javadoc і працює на Gradle 8.x
-        classpath "net.fabricmc:fabric-loom:1.14.3"
-    }
+plugins {
+    id 'fabric-loom' version '1.14.2'
 }
-
-// Застосовуємо плагін за його внутрішнім ідентифікатором
-apply plugin: "fabric-loom"
 
 version = project.mod_version
 group = project.maven_group
